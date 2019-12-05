@@ -22,36 +22,55 @@ func main() {
 	for i, code := range codesStr {
 		codes[i], err = strconv.Atoi(code)
 		if err != nil {
-			panic("Wooaoahah")
+			panic("")
 		}
 	}
 
-	fmt.Println(len(codes), codes)
+	codes1 := make([]int, len(codes))
+	copy(codes1, codes)
+	codes1[1] = 12
+	codes1[2] = 2
 
-	// codes[1] = 12
-	// codes[2] = 2
-	fmt.Println(codes)
-
-	loc := 0
-	for loc < len(codes) {
-		if codes[loc] == 99 {
-			fmt.Println("hit 99")
+	for opLoc := 0; opLoc < len(codes1); opLoc += 4 {
+		if codes1[opLoc] == 99 {
 			break
 		}
-		if codes[loc] != 1 && codes[loc] != 2 {
-			panic("bad op code")
+		if codes[opLoc] == 1 {
+			codes1[codes1[opLoc+3]] = codes1[codes1[opLoc+1]] + codes1[codes1[opLoc+2]]
 		}
-		if codes[loc] == 1 {
-			codes[codes[loc+3]] = codes[loc+1] + codes[loc+2]
+		if codes[opLoc] == 2 {
+			codes1[codes1[opLoc+3]] = codes1[codes1[opLoc+1]] * codes1[codes1[opLoc+2]]
 		}
-		if codes[loc] == 1 {
-			codes[codes[loc+3]] = codes[loc+1] * codes[loc+2]
-		}
-		fmt.Println(codes)
-
-		loc += 4
 	}
 
-	fmt.Println(codes)
+	fmt.Println("Part 1: ", codes1[0])
 
+	for noun := 0; noun <= 99; noun++ {
+		for verb := 0; verb <= 99; verb++ {
+			testCodes := make([]int, len(codes))
+			copy(testCodes, codes)
+
+			testCodes[1] = noun
+			testCodes[2] = verb
+
+			for opLoc := 0; opLoc < len(testCodes); opLoc += 4 {
+				if testCodes[opLoc] == 99 {
+					break
+				}
+				if testCodes[opLoc] == 1 {
+					testCodes[testCodes[opLoc+3]] = testCodes[testCodes[opLoc+1]] + testCodes[testCodes[opLoc+2]]
+				}
+				if codes[opLoc] == 2 {
+					testCodes[testCodes[opLoc+3]] = testCodes[testCodes[opLoc+1]] * testCodes[testCodes[opLoc+2]]
+				}
+			}
+			if testCodes[0] == 19690720 {
+				fmt.Printf("Noun: %d. Verb: %d. Output: %d.\n", noun, verb, testCodes[0])
+				fmt.Println("Part 2: ", (100*noun)+verb)
+				break
+			}
+		}
+	}
 }
+
+func 
