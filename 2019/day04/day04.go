@@ -21,12 +21,9 @@ func main() {
 
 		addOne(&pwdMinArr)
 	}
-	fmt.Println(pwdMinArr, pwdCombinations, pwd2Combinations)
+	fmt.Printf("Part 1: %d\n", pwdCombinations)
+	fmt.Printf("Part 2: %d\n", pwd2Combinations)
 
-	// for pwd := pwdMin ; pwd <= pwdMax ; pwd++ {
-
-	// }
-	// fmt.Println("asd")
 }
 
 func isAscending(arr []int) bool {

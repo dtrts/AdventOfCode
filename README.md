@@ -7,6 +7,6 @@ My solutions for https://adventofcode.com.
 They haven't been optimised for time or usage so caution as you go.
 
 Completed puzzles:
-- 2019: 1
+- 2019: 1,2,4
 - 2018: 1-8, 13(i), 18
 - 2015: 1-21
