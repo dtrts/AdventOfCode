@@ -72,5 +72,3 @@ func main() {
 		}
 	}
 }
-
-func 
