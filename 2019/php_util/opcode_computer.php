@@ -15,6 +15,7 @@ class opcodeComputer
   function resetInstructions()
   {
     $this->instructions = $this->originalInstructions;
+    $this->outputs = array();
   }
 
   function setNounAndVerb($noun, $verb)
@@ -76,16 +77,56 @@ class opcodeComputer
 
         case 3:
           $input = array_shift($this->inputs);
-          echo "Reading Input: " . $input . PHP_EOL;
           $this->set($opLoc + 1, $input);
           $opLoc += 2;
           break;
+
         case 4:
           $output = $this->get($opLoc + 1, $mode1);
-          echo "Generating output: " . $output . PHP_EOL;
           $this->outputs[] = $output;
           $opLoc += 2;
           break;
+
+
+        case 5:
+          if ($this->get($opLoc + 1, $mode1) != 0) {
+            $opLoc = $this->get($opLoc + 2, $mode2);
+          } else {
+            $opLoc += 3;
+          }
+          break;
+
+        case 6:
+          if ($this->get($opLoc + 1, $mode1) == 0) {
+            $opLoc = $this->get($opLoc + 2, $mode2);
+          } else {
+            $opLoc += 3;
+          }
+          break;
+
+        case 7:
+          if ($this->get($opLoc + 1, $mode1) < $this->get($opLoc + 2, $mode2)) {
+            $setVal = 1;
+          } else {
+            $setVal = 0;
+          }
+          // $this->set($this->get($opLoc + 3, $mode3), $setVal);
+          $this->set($opLoc + 3, $setVal);
+          $opLoc += 4;
+          break;
+
+        case 8:
+
+          if ($this->get($opLoc + 1, $mode1) == $this->get($opLoc + 2, $mode2)) {
+            $setVal = 1;
+          } else {
+            $setVal = 0;
+          }
+          // $this->set($this->get($opLoc + 3, $mode3), $setVal);
+          $this->set($opLoc + 3, $setVal);
+          $opLoc += 4;
+          break;
+
         default:
           echo "Oh fex" . PHP_EOL;
           return;
