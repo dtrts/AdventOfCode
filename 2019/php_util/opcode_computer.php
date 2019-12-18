@@ -110,7 +110,6 @@ class opcodeComputer
           } else {
             $setVal = 0;
           }
-          // $this->set($this->get($opLoc + 3, $mode3), $setVal);
           $this->set($opLoc + 3, $setVal);
           $opLoc += 4;
           break;
@@ -122,7 +121,6 @@ class opcodeComputer
           } else {
             $setVal = 0;
           }
-          // $this->set($this->get($opLoc + 3, $mode3), $setVal);
           $this->set($opLoc + 3, $setVal);
           $opLoc += 4;
           break;
