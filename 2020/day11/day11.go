@@ -78,6 +78,8 @@ func update(seatingArrangement [][]string, seatingArrangementCount [][]int, fuss
 	return
 }
 
+// Produces a corressonding arrangement to the seats, showing how many
+// surrounding seats each position has. -1 is used for the floor
 func seatingArrangementCounter(seatingArrangement [][]string, adjacent bool) (seatingArrangementCount [][]int) {
 	// Go through all positions and find the number of occupied seats next door.
 	for row, rowLine := range seatingArrangement {
@@ -104,70 +106,7 @@ func seatingArrangementCounter(seatingArrangement [][]string, adjacent bool) (se
 	return seatingArrangementCount
 }
 
-func numSurroundingSeats(seatingArrangement [][]string, row int, column int) (num int) {
-	maxRow := len(seatingArrangement) - 1
-	maxCol := len(seatingArrangement[0]) - 1
-	occupied := "#"
-
-	// away from top
-	if row > 0 {
-		//nw
-		// away from left
-		if column > 0 {
-			if seatingArrangement[row-1][column-1] == occupied {
-				num++
-			}
-		}
-		//n middle top
-		if seatingArrangement[row-1][column] == occupied {
-			num++
-		}
-		//ne away from right
-		if column < maxCol {
-			if seatingArrangement[row-1][column+1] == occupied {
-				num++
-			}
-		}
-	}
-
-	// w
-	if column > 0 {
-		if seatingArrangement[row][column-1] == occupied {
-			num++
-		}
-	}
-
-	//e
-	if column < maxCol {
-		if seatingArrangement[row][column+1] == occupied {
-			num++
-		}
-	}
-
-	// away from bottom
-	if row < maxRow {
-		//sw
-		// away from left
-		if column > 0 {
-			if seatingArrangement[row+1][column-1] == occupied {
-				num++
-			}
-		}
-		//s middle bottom
-		if seatingArrangement[row+1][column] == occupied {
-			num++
-		}
-		//se away from right
-		if column < maxCol {
-			if seatingArrangement[row+1][column+1] == occupied {
-				num++
-			}
-		}
-	}
-
-	return num
-}
-
+// Count all occupied seats in an arrangment
 func numOccupiedSeats(seatingArrangement [][]string) (num int) {
 	for _, v := range seatingArrangement {
 		for _, v2 := range v {
@@ -179,6 +118,7 @@ func numOccupiedSeats(seatingArrangement [][]string) (num int) {
 	return num
 }
 
+// Check if a 2d coordinate is valid based on max indexes
 func inPlane(position []int, maxRow int, maxCol int) bool {
 	if position[0] >= 0 && position[0] <= maxRow && position[1] >= 0 && position[1] <= maxCol {
 		return true
@@ -186,6 +126,7 @@ func inPlane(position []int, maxRow int, maxCol int) bool {
 	return false
 }
 
+// Multiply a coordinate by a scalar.
 func multCoord(coord []int, mult int) []int {
 	newCoord := []int{}
 	for _, v := range coord {
@@ -194,6 +135,7 @@ func multCoord(coord []int, mult int) []int {
 	return newCoord
 }
 
+// Count occupied seats in all 8 directions, skipping over floors
 func numSurroundingSeats2(seatingArrangement [][]string, row int, column int) (num int) {
 	maxRow := len(seatingArrangement) - 1
 	maxCol := len(seatingArrangement[0]) - 1
@@ -240,62 +182,20 @@ func numSurroundingSeats2(seatingArrangement [][]string, row int, column int) (n
 func numSurroundingSeats3(seatingArrangement [][]string, row int, column int) (num int) {
 	maxRow := len(seatingArrangement) - 1
 	maxCol := len(seatingArrangement[0]) - 1
-	occupied := "#"
 
-	// away from top
-	if row > 0 {
-		//nw
-		// away from left
-		if column > 0 {
-			if seatingArrangement[row-1][column-1] == occupied {
+	directions := [][]int{{-1, 0}, {1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}}
+
+	for _, direction := range directions {
+
+		newPosition := []int{row + direction[0], column + direction[1]}
+
+		if inPlane(newPosition, maxRow, maxCol) {
+			seatCheck := seatingArrangement[newPosition[0]][newPosition[1]]
+			if seatCheck == "#" {
 				num++
 			}
 		}
-		//n middle top
-		if seatingArrangement[row-1][column] == occupied {
-			num++
-		}
-		//ne away from right
-		if column < maxCol {
-			if seatingArrangement[row-1][column+1] == occupied {
-				num++
-			}
-		}
-	}
 
-	// w
-	if column > 0 {
-		if seatingArrangement[row][column-1] == occupied {
-			num++
-		}
-	}
-
-	//e
-	if column < maxCol {
-		if seatingArrangement[row][column+1] == occupied {
-			num++
-		}
-	}
-
-	// away from bottom
-	if row < maxRow {
-		//sw
-		// away from left
-		if column > 0 {
-			if seatingArrangement[row+1][column-1] == occupied {
-				num++
-			}
-		}
-		//s middle bottom
-		if seatingArrangement[row+1][column] == occupied {
-			num++
-		}
-		//se away from right
-		if column < maxCol {
-			if seatingArrangement[row+1][column+1] == occupied {
-				num++
-			}
-		}
 	}
 
 	return num
