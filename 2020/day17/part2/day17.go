@@ -25,7 +25,7 @@ func main() {
 		activeCubes = newActiveCubes
 
 		fmt.Printf("CYCLE %v --------------------------------------------------------------------------------------------\n", cycle+1)
-		printActiveCubes(activeCubes)
+		// printActiveCubes(activeCubes)
 	}
 
 	fmt.Printf("Part2. Number of Active Cubes: %v\n", len(activeCubes))
