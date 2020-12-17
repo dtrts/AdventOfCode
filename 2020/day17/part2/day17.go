@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	// input = inputTest
+	input = inputTest
 	fmt.Printf("State:%v\n\n", input)
 	// start with space size, i.e
 	//Array values are comparable if values of the array element type are comparable. Two array values are equal if their

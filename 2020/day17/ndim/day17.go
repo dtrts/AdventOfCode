@@ -24,7 +24,7 @@ func main() {
 	activeCubes := parseInput(input, dimensions)
 	printActiveCubes(activeCubes)
 
-	numCycles := 7
+	numCycles := 6
 
 	for cycle := 0; cycle < numCycles; cycle++ {
 		neighbourCount := neighbourCounter(activeCubes, dimensions)
@@ -32,13 +32,28 @@ func main() {
 		activeCubes = newActiveCubes
 
 		fmt.Printf("CYCLE %v --------------------------------------------------------------------------------------------\n", cycle+1)
-		printActiveCubes(activeCubes)
+		// printActiveCubes(activeCubes)
 		fmt.Printf(" Number of Active Cubes: %v\n", len(activeCubes))
 
 	}
 
 	fmt.Printf("Part2. Number of Active Cubes: %v\n", len(activeCubes))
 
+}
+
+func parseInput(input string, dimensions int) [][]int {
+	activeCubes := [][]int{}
+	for y, line := range strings.Split(input, "\n") {
+		for x, char := range strings.Split(line, "") {
+			if char == "#" {
+				activeCubeLoc := make([]int, dimensions)
+				activeCubeLoc[0] = x - 1
+				activeCubeLoc[1] = y - 1
+				activeCubes = append(activeCubes, activeCubeLoc)
+			}
+		}
+	}
+	return activeCubes
 }
 
 func updateActiveCubes(activeCubes [][]int, neighbourCount map[string]int) [][]int {
@@ -109,21 +124,6 @@ func moveLoc(loc []int, direction []int) []int {
 	return newLoc
 }
 
-func parseInput(input string, dimensions int) [][]int {
-	activeCubes := [][]int{}
-	for y, line := range strings.Split(input, "\n") {
-		for x, char := range strings.Split(line, "") {
-			if char == "#" {
-				activeCubeLoc := make([]int, dimensions)
-				activeCubeLoc[0] = x - 1
-				activeCubeLoc[1] = y - 1
-				activeCubes = append(activeCubes, activeCubeLoc)
-			}
-		}
-	}
-	return activeCubes
-}
-
 func compareLoc(loc0 []int, loc1 []int) bool {
 	if len(loc0) != len(loc1) {
 		return false
@@ -159,16 +159,6 @@ func directions(dimensions int) [][]int {
 	return combos[:len(combos)-1]
 }
 
-func printActiveCubes(activeCubes [][]int) {
-	min, max := minMaxLoc(activeCubes)
-	highDimCombos := highDimCombos(min[2:], max[2:])
-
-	for _, highDimCombo := range highDimCombos {
-		printSlice(activeCubes, min, max, highDimCombo)
-	}
-	return
-}
-
 func highDimCombos(min []int, max []int) [][]int {
 	start, grower := [][]int{}, [][]int{}
 	for i := min[0]; i <= max[0]; i++ {
@@ -184,6 +174,18 @@ func highDimCombos(min []int, max []int) [][]int {
 		grower = [][]int{}
 	}
 	return start
+}
+
+// Display Only  ------------------------------------------------------------------------
+
+func printActiveCubes(activeCubes [][]int) {
+	min, max := minMaxLoc(activeCubes)
+	highDimCombos := highDimCombos(min[2:], max[2:])
+
+	for _, highDimCombo := range highDimCombos {
+		printSlice(activeCubes, min, max, highDimCombo)
+	}
+	return
 }
 
 func printSlice(activeCubes [][]int, min []int, max []int, higherDims []int) {
