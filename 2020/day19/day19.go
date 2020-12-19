@@ -47,11 +47,11 @@ func genRegexRule(ruleIndex string, rules map[string]string, regexRules map[stri
 
 	ruleValue := rules[ruleIndex]
 
-	if ruleIndex == "8" && 0 <= eightCount && eightCount <= 10 {
+	if ruleIndex == "8" && 0 <= eightCount && eightCount <= 3 { // Tested this, minimum is three for my puzzle input
 		eightCount++
 		ruleValue = "(42 | 42 8)"
 	}
-	if ruleIndex == "11" && 0 <= elevenCount && elevenCount <= 10 {
+	if ruleIndex == "11" && 0 <= elevenCount && elevenCount <= 2 { // tested this, 2 is minimum for my puzzle input
 		elevenCount++
 		ruleValue = "(42 31 | 42 11 31)"
 	}
