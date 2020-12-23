@@ -8,9 +8,12 @@ import (
 )
 
 var input = []int{1, 3, 7, 8, 2, 6, 4, 9, 5}
+
 var inputTest = []int{3, 8, 9, 1, 2, 5, 4, 6, 7}
 
 func main() {
+
+	// input = inputTest
 
 	// Part 1
 	start := time.Now()
