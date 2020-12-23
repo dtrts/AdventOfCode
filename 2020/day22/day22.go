@@ -130,15 +130,13 @@ func round(player1 *[]int, player2 *[]int, recursive bool) (roundWinner *[]int) 
 
 func gameStateExists(gameStateHistory [][2][]int, currentGameState [2][]int) bool {
 	for _, oldGameState := range gameStateHistory {
-		if compIntSlice(oldGameState[0], currentGameState[0]) {
+		if compIntSlice(oldGameState[0], currentGameState[0]) || compIntSlice(oldGameState[1], currentGameState[1]) {
 			return true
 		}
-		if compIntSlice(oldGameState[1], currentGameState[1]) {
-			return true
-		}
-		// 	if gameStatesMatch(oldGameState, currentGameState) {
-		// 		return true
-		// 	}
+
+		// if gameStatesMatch(oldGameState, currentGameState) {
+		// 	return true
+		// }
 	}
 	return false
 }
