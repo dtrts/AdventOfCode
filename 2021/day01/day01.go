@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+func 
+
 func main() {
 	start := time.Now()
 	log.Printf("Starting... %s", start.String())
@@ -34,25 +36,35 @@ func main() {
 
 	fmt.Println(increases)
 
-	sumArray := []int{}
+	// sumArray := []int{}
 	increasesPart2 := 0
+
 	for i := range input {
-		if i < 2 {
-			continue
-		}
-		sumArray = append(sumArray, input[i]+input[i-1]+input[i-2])
-	}
-
-	for i := range sumArray {
-		if i == 0 {
+		if i < 3 {
 			continue
 		}
 
-		if sumArray[i-1] < sumArray[i] {
+		if input[i-3] < input[i] {
 			increasesPart2++
 		}
-
 	}
+	// for i := range input {
+	// 	if i < 2 {
+	// 		continue
+	// 	}
+	// 	sumArray = append(sumArray, input[i]+input[i-1]+input[i-2])
+	// }
+
+	// for i := range sumArray {
+	// 	if i == 0 {
+	// 		continue
+	// 	}
+
+	// 	if sumArray[i-1] < sumArray[i] {
+	// 		increasesPart2++
+	// 	}
+
+	// }
 
 	fmt.Println(increasesPart2)
 
