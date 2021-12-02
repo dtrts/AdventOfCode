@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-func 
-
 func main() {
 	start := time.Now()
 	log.Printf("Starting... %s", start.String())
