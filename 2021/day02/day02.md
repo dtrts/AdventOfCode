@@ -12,7 +12,7 @@ Note that since you're on a submarine, down and up affect your depth, and so the
 
 The submarine seems to already have a planned course (your puzzle input). You should probably figure out where it's going. For example:
 
-```
+```txt
 forward 5
 down 5
 forward 8

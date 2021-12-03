@@ -20,9 +20,7 @@ func main() {
 		input = inputTest
 	}
 
-	var inputLines []string
-
-	inputLines = append(inputLines, strings.Split(strings.TrimSuffix(input, "\n"), "\n")...)
+	inputLines := strings.Split(strings.TrimSuffix(input, "\n"), "\n")
 
 	// Position and depth start at 0
 	position := 0
