@@ -65,7 +65,7 @@ func main() {
 	oxGenPosition := 0
 	for len(oxGen) > 1 {
 		mostCommon := mostCommon(oxGen, oxGenPosition)
-		if mostCommon == 0 || mostCommon == 49 { // No most common or 1 most common
+		if mostCommon == 0 || mostCommon == 49 {
 			oxGen = removeElements(oxGen, 48, oxGenPosition)
 		} else {
 			oxGen = removeElements(oxGen, 49, oxGenPosition)
@@ -81,7 +81,7 @@ func main() {
 	scrubRatePosition := 0
 	for len(scrubRate) > 1 {
 		mostCommon := mostCommon(scrubRate, scrubRatePosition)
-		if mostCommon == 0 || mostCommon == 49 { // No most common or 1 most common
+		if mostCommon == 0 || mostCommon == 49 {
 			scrubRate = removeElements(scrubRate, 49, scrubRatePosition)
 		} else {
 			scrubRate = removeElements(scrubRate, 48, scrubRatePosition)
