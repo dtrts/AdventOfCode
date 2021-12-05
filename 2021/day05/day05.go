@@ -23,42 +23,29 @@ func main() {
 	lines := parseInput(input)
 	mapSize := mapSize(lines)
 
-	printLines(lines)
-	fmt.Println(mapSize)
-
-	floorMap := make([][]int, mapSize[1])
-	for i := range floorMap {
-		floorMap[i] = make([]int, mapSize[0])
-	}
+	floorMapPart1 := makeFloorMap(mapSize)
+	floorMapPart2 := makeFloorMap(mapSize)
 
 	for _, line := range lines {
+		m, c, isVertical := calcLine(line[0], line[1])
+
+		// If Diagonal then only mark on part 2 and continue
 		if line[0][0] != line[1][0] && line[0][1] != line[1][1] {
-			// fmt.Println("Line is diagonal:", line)
-			continue
+			markLine(floorMapPart2, line[0], line[1], m, c, isVertical)
+
+		} else {
+			markLine(floorMapPart1, line[0], line[1], m, c, isVertical)
+			markLine(floorMapPart2, line[0], line[1], m, c, isVertical)
 		}
-		// fmt.Println("Line is hozzi or verty:", line)
-		markLine(floorMap, line)
 	}
+
 	if *testInputPtr {
-		printFloorMap(floorMap)
+		printLines(lines)
+		printFloorMap(floorMapPart1)
+		printFloorMap(floorMapPart2)
 	}
-	fmt.Println("Part 1:", countOverlaps(floorMap))
-
-	floorMap2 := make([][]int, mapSize[1])
-	for i := range floorMap2 {
-		floorMap2[i] = make([]int, mapSize[0])
-	}
-	for _, line := range lines {
-		markLine(floorMap2, line)
-	}
-	if *testInputPtr {
-		printFloorMap(floorMap2)
-	}
-	fmt.Println("Part 2:", countOverlaps(floorMap2))
-
-	// To avoid the most dangerous areas, you need to determine the number of points where at least two lines overlap. In the above example, this is anywhere in the diagram with a 2 or larger - a total of 5 points.
-
-	// Consider only horizontal and vertical lines. At how many points do at least two lines overlap?
+	fmt.Println("Part 1:", countOverlaps(floorMapPart1))
+	fmt.Println("Part 2:", countOverlaps(floorMapPart2))
 
 	elapsed := time.Since(start)
 	log.Printf("Duration: %s", elapsed)
@@ -75,36 +62,52 @@ func countOverlaps(floorMap [][]int) (count int) {
 	return count
 }
 
-func markLine(floorMap [][]int, line [2][2]int) {
+func calcLine(lineStart, lineEnd [2]int) (m, c int, isVertical bool) {
+	// We know from input that the gradient will always be an integer. |m| in (0,1) so we don't need to handle floats
 
-	if line[0][0] == line[1][0] || line[0][1] == line[1][1] {
-		fmt.Println("Horizontal and vertical", line)
-		for x := line[0][0]; x <= line[1][0]; x++ {
-			if line[0][1] <= line[1][1] {
-				for y := line[0][1]; y <= line[1][1]; y++ {
-					floorMap[y][x]++
-				}
-			} else {
-				for y := line[0][1]; y >= line[1][1]; y-- {
-					floorMap[y][x]++
-				}
-			}
-		}
+	// Vertical
+	if lineStart[0] == lineEnd[0] {
+		isVertical = true
+		c = lineStart[0]
+
 	} else {
-		// x will always increase
-		// diff between x and y are the same
-		fmt.Println("Diagnoals line:", line)
-		dir := 1
-		if line[1][1] < line[0][1] {
-			dir = -1
-		}
-		distance := line[1][0] - line[0][0]
-		fmt.Println("Distance", distance, "dir", dir)
-
-		for i := 0; i <= distance; i++ {
-			floorMap[line[0][1]+(dir*i)][line[0][0]+i]++
-		}
+		isVertical = false
+		dx := lineEnd[0] - lineStart[0]
+		dy := lineEnd[1] - lineStart[1]
+		m = dy / dx
+		c = lineStart[1] - (m * lineStart[0])
 	}
+
+	return m, c, isVertical
+}
+
+func markLine(floorMap [][]int, lineStart, lineEnd [2]int, m, c int, isVertical bool) {
+	if isVertical {
+		yCoords := [2]int{lineStart[1], lineEnd[1]}
+		for y := min(yCoords); y <= max(yCoords); y++ {
+			floorMap[y][c]++
+		}
+		return
+	}
+
+	xCoords := [2]int{lineStart[0], lineEnd[0]}
+	for x := min(xCoords); x <= max(xCoords); x++ {
+		y := (m * x) + c
+		floorMap[y][x]++
+	}
+}
+
+func min(s [2]int) int {
+	if s[0] < s[1] {
+		return s[0]
+	}
+	return s[1]
+}
+func max(s [2]int) int {
+	if s[0] > s[1] {
+		return s[0]
+	}
+	return s[1]
 }
 
 // Print
@@ -113,10 +116,19 @@ func printFloorMap(floorMap [][]int) {
 		fmt.Println(col)
 	}
 }
+
 func printLines(lines [][2][2]int) {
 	for _, line := range lines {
 		fmt.Println(line)
 	}
+}
+
+func makeFloorMap(mapSize [2]int) [][]int {
+	floorMap := make([][]int, mapSize[1])
+	for i := range floorMap {
+		floorMap[i] = make([]int, mapSize[0])
+	}
+	return floorMap
 }
 
 // Input Parseing
@@ -139,11 +151,11 @@ func parseInput(input string) [][2][2]int {
 
 	for i, line := range inputLines {
 		fmt.Sscanf(line, "%d,%d -> %d,%d", &ret[i][0][0], &ret[i][0][1], &ret[i][1][0], &ret[i][1][1])
-		if ret[i][0][0] > ret[i][1][0] {
-			swap := ret[i][1]
-			ret[i][1] = ret[i][0]
-			ret[i][0] = swap
-		}
+		// if ret[i][0][0] > ret[i][1][0] {
+		// 	swap := ret[i][1]
+		// 	ret[i][1] = ret[i][0]
+		// 	ret[i][0] = swap
+		// }
 	}
 
 	return ret
