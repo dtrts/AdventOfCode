@@ -23,8 +23,22 @@ func main() {
 	}
 
 	hozList := parseInput(input)
-	// avg := avgInt(hozList)
 
+	// Aparently you can use the median for the first part and the mean for the second.. ?
+	median := hozList[len(hozList)/2]
+	sum := 0
+	for _, v := range hozList {
+		sum += v
+	}
+	mean := sum / len(hozList)
+
+	fmt.Println(fuelUsed(hozList, median, math.MaxInt, math.MaxInt))
+	fmt.Println(fuelUsed(hozList, mean, math.MaxInt, math.MaxInt))
+
+	log.Printf("Duration: %s", time.Since(start))
+
+	// avg := avgInt(hozList)
+	// "Brute Force" Approach
 	minFuel, minFuel2 := fuelUsed(hozList, hozList[0], math.MaxInt, math.MaxInt)
 	min, max := min(hozList), max(hozList)
 	for i := min; i <= max; i++ {
@@ -42,8 +56,7 @@ func main() {
 	fmt.Println(minFuel)
 	fmt.Println(minFuel2)
 
-	elapsed := time.Since(start)
-	log.Printf("Duration: %s", elapsed)
+	log.Printf("Duration: %s", time.Since(start))
 }
 
 func max(s []int) int {
