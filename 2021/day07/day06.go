@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -24,10 +25,10 @@ func main() {
 	hozList := parseInput(input)
 	// avg := avgInt(hozList)
 
-	minFuel, minFuel2 := fuelUsed(hozList, hozList[0])
-
-	for i := min(hozList); i <= max(hozList); i++ {
-		FU, FU2 := fuelUsed(hozList, i)
+	minFuel, minFuel2 := fuelUsed(hozList, hozList[0], math.MaxInt, math.MaxInt)
+	min, max := min(hozList), max(hozList)
+	for i := min; i <= max; i++ {
+		FU, FU2 := fuelUsed(hozList, i, minFuel, minFuel2)
 		if FU < minFuel {
 			minFuel = FU
 		}
@@ -64,7 +65,7 @@ func min(s []int) int {
 	return min
 }
 
-func fuelUsed(s []int, p int) (fuelUsed, fuelUsed2 int) {
+func fuelUsed(s []int, p int, currMin, currMin2 int) (fuelUsed, fuelUsed2 int) {
 	diff := 0
 	for _, v := range s {
 		if v > p {
@@ -74,6 +75,9 @@ func fuelUsed(s []int, p int) (fuelUsed, fuelUsed2 int) {
 		}
 		fuelUsed += diff
 		fuelUsed2 += (diff * (diff + 1)) / 2
+		if fuelUsed > currMin && fuelUsed2 > currMin2 {
+			return fuelUsed, fuelUsed2
+		}
 	}
 	return fuelUsed, fuelUsed2
 }
