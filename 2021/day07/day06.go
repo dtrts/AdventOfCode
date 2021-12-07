@@ -24,11 +24,10 @@ func main() {
 	hozList := parseInput(input)
 	// avg := avgInt(hozList)
 
-	minFuel := fuelUsed(hozList, hozList[0])
-	minFuel2 := fuelUsedTriangle(hozList, hozList[0])
+	minFuel, minFuel2 := fuelUsed(hozList, hozList[0])
+
 	for i := min(hozList); i <= max(hozList); i++ {
-		FU := fuelUsed(hozList, i)
-		FU2 := fuelUsedTriangle(hozList, i)
+		FU, FU2 := fuelUsed(hozList, i)
 		if FU < minFuel {
 			minFuel = FU
 		}
@@ -65,37 +64,18 @@ func min(s []int) int {
 	return min
 }
 
-func fuelUsedTriangle(s []int, p int) int {
-	fuelUsed, diff := 0, 0
+func fuelUsed(s []int, p int) (fuelUsed, fuelUsed2 int) {
+	diff := 0
 	for _, v := range s {
 		if v > p {
 			diff = v - p
 		} else {
 			diff = p - v
 		}
-		fuelUsed += (diff * (diff + 1)) / 2
+		fuelUsed += diff
+		fuelUsed2 += (diff * (diff + 1)) / 2
 	}
-	return fuelUsed
-}
-
-func fuelUsed(s []int, p int) int {
-	fuelUsed := 0
-	for _, v := range s {
-		if v > p {
-			fuelUsed += v - p
-		} else {
-			fuelUsed += p - v
-		}
-	}
-	return fuelUsed
-}
-
-func avgInt(s []int) int {
-	sum := 0
-	for _, v := range s {
-		sum += v
-	}
-	return sum / len(s)
+	return fuelUsed, fuelUsed2
 }
 
 func parseInput(input string) []int {
