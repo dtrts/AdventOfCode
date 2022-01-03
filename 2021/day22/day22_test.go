@@ -5,15 +5,6 @@ import (
 	"testing"
 )
 
-func TestCuboidInSmallRange(t *testing.T) {
-	cuboidTest := cuboid{true, -51, -51, -50, -50, -50, -50}
-
-	result := cuboidInSmallRange(cuboidTest)
-	if result == true {
-		t.Error("Result should be false, got", result)
-	}
-}
-
 func TestConsumes(t *testing.T) {
 	cuboidTest1 := cuboid{true, -5, 5, -5, 5, -5, 5}
 	cuboidTest2 := cuboid{true, -5, 5, -5, 5, -5, 5}
