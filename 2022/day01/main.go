@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"golang.org/x/exp/slices"
 )
 
 func main() {
@@ -51,8 +49,6 @@ func main() {
 		totalByElf = append(totalByElf, totalCaloriesByElf)
 
 	}
-
-	slices.Delete()
 
 	sort.Slice(totalByElf, func(i, j int) bool {
 		return totalByElf[i] > totalByElf[j]
