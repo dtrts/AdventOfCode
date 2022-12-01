@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -23,25 +26,38 @@ func main() {
 		panic("Input file unable to be read.")
 	}
 
-	fmt.Println("Input bytes:", inputBytes)
 	inputString := string(inputBytes)
-	fmt.Println("Input string", inputString)
+	// fmt.Println("Input bytes:", inputBytes)
+	// fmt.Println("Input string", inputString)
 	// BOILER PLATE --------------------------------------------------------------------
 
-	fmt.Println("Calculating Part 1....")
+	fmt.Println("Calculating....")
 
-	// BOILER PLATE --------------------------------------------------------------------
+	elves := strings.Split(inputString, "\n\n")
+
+	totalByElf := make([]int, 0, len(elves))
+
+	for _, elf := range elves {
+		carriedCalories := strings.Split(elf, "\n")
+		totalCaloriesByElf := 0
+
+		for _, calorieStr := range carriedCalories {
+			calorie, _ := strconv.Atoi(calorieStr)
+			totalCaloriesByElf += calorie
+		}
+
+		totalByElf = append(totalByElf, totalCaloriesByElf)
+
+	}
+
+	sort.Slice(totalByElf, func(i, j int) bool {
+		return totalByElf[i] > totalByElf[j]
+	})
+
+	// ANS --------------------------------------------------------------------
 	elapsed := time.Since(start)
-	fmt.Println("Part1:")
+	fmt.Println("Part1:", totalByElf[0])
+	fmt.Println("Part2:", totalByElf[0]+totalByElf[1]+totalByElf[2])
 	log.Printf("Duration: %s", elapsed)
-	// BOILER PLATE --------------------------------------------------------------------
-
-	fmt.Println("Calculating Part 2....")
-
-	// BOILER PLATE --------------------------------------------------------------------
-	elapsed = time.Since(start)
-	fmt.Println("Part2:")
-	log.Printf("Duration: %s", elapsed)
-	// BOILER PLATE --------------------------------------------------------------------
-
+	// ANS --------------------------------------------------------------------
 }
