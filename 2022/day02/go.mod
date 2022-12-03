@@ -1,4 +1,4 @@
-module github.com/dtrts/adventofcode
+module github.com/dtrts/adventofcode/2022/day02
 
 go 1.19
 
