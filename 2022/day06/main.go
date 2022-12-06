@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"golang.org/x/exp/slices"
@@ -25,17 +24,9 @@ func main() {
 	if err != nil {
 		panic("Input file unable to be read.")
 	}
-
-	inputString := strings.TrimSpace(string(inputBytes))
 	// BOILER PLATE --------------------------------------------------------------------
 
-	charactersProcessed := 0
-	for i := 4; i < len(inputString); i++ {
-		if allDiff(inputString[i], inputString[i-1], inputString[i-2], inputString[i-3]) {
-			charactersProcessed = i + 1
-			break
-		}
-	}
+	charactersProcessed, charactersProcessed2 := 0, 0
 
 	for i := 4; i < len(inputBytes); i++ {
 		if allDiffSlice(inputBytes[i-4 : i]) {
@@ -44,23 +35,18 @@ func main() {
 		}
 	}
 
-	// BOILER PLATE --------------------------------------------------------------------
-	elapsed := time.Since(start)
-	log.Printf("Duration: %s", elapsed)
-	fmt.Println("Part1:", charactersProcessed)
-	// BOILER PLATE --------------------------------------------------------------------
-
 	for i := 14; i < len(inputBytes); i++ {
 		if allDiffSlice(inputBytes[i-14 : i]) {
-			charactersProcessed = i
+			charactersProcessed2 = i
 			break
 		}
 	}
 
 	// BOILER PLATE --------------------------------------------------------------------
-	elapsed = time.Since(start)
+	elapsed := time.Since(start)
 	log.Printf("Duration: %s", elapsed)
-	fmt.Println("Part2:", charactersProcessed)
+	fmt.Println("Part1:", charactersProcessed)
+	fmt.Println("Part2:", charactersProcessed2)
 	// BOILER PLATE --------------------------------------------------------------------
 }
 
@@ -70,13 +56,5 @@ func allDiffSlice[T comparable](s []T) bool {
 			return false
 		}
 	}
-	return true
-}
-
-func allDiff[T comparable](a, b, c, d T) bool {
-	if a == b || a == c || a == d || b == c || b == d || c == d {
-		return false
-	}
-
 	return true
 }
