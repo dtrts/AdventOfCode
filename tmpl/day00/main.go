@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+func p(s ...interface{}) {
+	fmt.Println(s...)
+}
+
 func main() {
 	// BOILER PLATE --------------------------------------------------------------------
 	start := time.Now()
@@ -23,25 +27,18 @@ func main() {
 		panic("Input file unable to be read.")
 	}
 
-	fmt.Println("Input bytes:", inputBytes)
 	inputString := string(inputBytes)
-	fmt.Println("Input string", inputString)
+	p("Input string", inputString)
 	// BOILER PLATE --------------------------------------------------------------------
 
-	fmt.Println("Calculating Part 1....")
+	p("Calculating Part 1....")
+
+	p("Calculating Part 2....")
 
 	// BOILER PLATE --------------------------------------------------------------------
 	elapsed := time.Since(start)
-	fmt.Println("Part1:")
 	log.Printf("Duration: %s", elapsed)
+	p("Part1:")
+	p("Part2:")
 	// BOILER PLATE --------------------------------------------------------------------
-
-	fmt.Println("Calculating Part 2....")
-
-	// BOILER PLATE --------------------------------------------------------------------
-	elapsed = time.Since(start)
-	fmt.Println("Part2:")
-	log.Printf("Duration: %s", elapsed)
-	// BOILER PLATE --------------------------------------------------------------------
-
 }
