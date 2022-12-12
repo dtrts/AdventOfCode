@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -18,7 +19,6 @@ func main() {
 	log.Printf("Starting... %s", start.Format("Jan 2 15:04:05 2006 MST"))
 
 	var inputFileName string
-	flag.StringVar(&inputFileName, "inputFileName", "input.txt", "Name of the input file")
 	flag.StringVar(&inputFileName, "i", "input.txt", "Name of the input file")
 	flag.Parse()
 
@@ -27,7 +27,7 @@ func main() {
 		panic("Input file unable to be read.")
 	}
 
-	inputString := string(inputBytes)
+	inputString := strings.TrimSpace(string(inputBytes))
 	p("Input string", inputString)
 	// BOILER PLATE --------------------------------------------------------------------
 
@@ -36,8 +36,7 @@ func main() {
 	p("Calculating Part 2....")
 
 	// BOILER PLATE --------------------------------------------------------------------
-	elapsed := time.Since(start)
-	log.Printf("Duration: %s", elapsed)
+	log.Printf("Duration: %s", time.Since(start))
 	p("Part1:")
 	p("Part2:")
 	// BOILER PLATE --------------------------------------------------------------------

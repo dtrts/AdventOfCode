@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"golang.org/x/exp/maps"
 	"log"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/maps"
 )
 
 func p(s ...interface{}) {
@@ -180,6 +181,7 @@ func main() {
 	p("Part2:", part2)
 	// BOILER PLATE --------------------------------------------------------------------
 	// 4788350550 WRONG
+	//28537348205
 }
 
 type Monkey struct {
