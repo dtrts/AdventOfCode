@@ -37,95 +37,107 @@ func main() {
 
 	nodes := parseMap(inputString)
 
-	lowPoints := []Coord{}
+	startNodeCoords := []Coord{}
 	for _, node := range nodes {
 		if node.height == 1 {
-			lowPoints = append(lowPoints, node.coordinate)
+			startNodeCoords = append(startNodeCoords, node.coordinate)
 		}
 	}
 
-	p(lowPoints)
-	// for _, coord := range lowPoints {
+	minPath := math.MaxInt
+	part1 := 0
 
-	// 	testNodes := parseMap(inputString)
-	// 	shortestPath := shortestPath(testNodes, testNodes[coord])
+	for i, startNodeCoord := range startNodeCoords {
 
-	// 	p(shortestPath)
+		p(i, "/", len(startNodeCoords))
 
-	// }
+		checkNodes := parseMap(inputString)
 
-	// startNode, endNode := &Node{}, &Node{}
-	// for _, node := range nodes {
-	// 	if node.start {
-	// 		startNode = node
-	// 	}
-	// 	if node.end {
-	// 		endNode = node
-	// 	}
-	// }
-	// p(startNode, endNode)
+		startNode := checkNodes[startNodeCoord]
 
-	// pq := make(PriorityQueue, len(nodes))
-	// i := 0
-	// for _, node := range nodes {
-	// 	pq[i] = &Item{
-	// 		value:    node,
-	// 		priority: node.distance,
-	// 		index:    i,
-	// 	}
-	// 	i++
-	// }
-	// heap.Init(&pq)
+		path := shortestPath(checkNodes, startNode)
 
-	// p(len(pq))
+		p("path:", path)
 
-	// for len(pq) > 0 {
-	// 	// for i := 0; i < 5; i++ {
-	// 	currentItem := heap.Pop(&pq).(*Item)
-	// 	p("---")
-	// 	p(currentItem)
-	// 	p(currentItem.value)
-	// 	p(currentItem.value.dest)
+		if nodes[startNodeCoord].start {
+			part1 = path
+		}
 
-	// 	for _, destNode := range currentItem.value.dest {
+		if path < minPath {
+			minPath = path
+		}
 
-	// 		var destNodeItem *Item
-	// 		for _, item := range pq {
-	// 			if item.value == destNode {
-	// 				destNodeItem = item
-	// 				break
-	// 			}
-	// 		}
-	// 		if destNodeItem == nil {
-	// 			continue
-	// 		}
+	}
 
-	// 		newDistance := currentItem.value.distance + 1
-
-	// 		if newDistance < destNode.distance {
-	// 			destNode.distance = newDistance
-	// 			destNode.via = currentItem.value
-	// 			pq.update(destNodeItem, destNode, newDistance)
-	// 		}
-
-	// 	}
-
-	// }
-
-	// p(len(pq))
+	// part1 := shortestPath(nodes, startNode)
 
 	p("Calculating Part 2....")
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
-	// p("Part1:", endNode.distance)
-	p("Part2:")
+	p("Part1:", part1)
+	p("Part2:", minPath)
 	// BOILER PLATE --------------------------------------------------------------------
+}
+
+func shortestPath(nodes map[Coord]*Node, startNode *Node) int {
+
+	endNode := &Node{}
+	for _, node := range nodes {
+		if node.end {
+			endNode = node
+		}
+	}
+
+	p("Start Node", startNode)
+	startNode.distance = 0
+	p("Updated Start Node", startNode)
+	pq := make(PriorityQueue, len(nodes))
+	i := 0
+	for _, node := range nodes {
+		pq[i] = &Item{
+			value:    node,
+			priority: node.distance,
+			index:    i,
+		}
+		i++
+	}
+
+	heap.Init(&pq)
+
+	for len(pq) > 0 {
+		currentItem := heap.Pop(&pq).(*Item)
+		// p(currentItem)
+		for _, destNode := range currentItem.value.dest {
+
+			var destNodeItem *Item
+			for _, item := range pq {
+				if item.value == destNode {
+					destNodeItem = item
+					break
+				}
+			}
+			if destNodeItem == nil {
+				continue
+			}
+
+			newDistance := currentItem.value.distance + 1
+
+			if newDistance < destNode.distance {
+				destNode.distance = newDistance
+				destNode.via = currentItem.value
+				pq.update(destNodeItem, destNode, newDistance)
+			}
+		}
+	}
+	return endNode.distance
 }
 
 func parseMap(inputString string) map[Coord]*Node {
 	mapLines := strings.Split(inputString, "\n")
-
+	height := len(mapLines)
+	width := len(mapLines[0])
+	p(height, width)
 	aHeightAdjustment := int(string('a')[0]) - 1
 
 	nodes := make(map[Coord]*Node)
@@ -138,12 +150,12 @@ func parseMap(inputString string) map[Coord]*Node {
 			distance := math.MaxInt
 			var isStart, isEnd bool
 			if string(char) == "S" {
-				height = 1 // 'a'
-				// distance = 0
+				height = 1
+				distance = 0
 				isStart = true
 			}
 			if string(char) == "E" {
-				height = 26 // 'z'
+				height = 26
 				isEnd = true
 			}
 
@@ -183,63 +195,12 @@ func parseMap(inputString string) map[Coord]*Node {
 		}
 	}
 
+	// p(nodes)
+	// for coord, node := range nodes {
+	// 	p(coord, node)
+	// }
+
 	return nodes
-}
-
-func shortestPath(nodes map[Coord]*Node, startNode *Node) int {
-
-	endNode := &Node{}
-	for _, node := range nodes {
-		if node.end {
-			endNode = node
-		}
-	}
-
-	startNode.distance = 0
-
-	pq := make(PriorityQueue, len(nodes))
-	i := 0
-	for _, node := range nodes {
-		pq[i] = &Item{
-			value:    node,
-			priority: node.distance,
-			index:    i,
-		}
-		i++
-	}
-	heap.Init(&pq)
-
-	for len(pq) > 0 {
-		// for i := 0; i < 5; i++ {
-		currentItem := heap.Pop(&pq).(*Item)
-
-		for _, destNode := range currentItem.value.dest {
-
-			var destNodeItem *Item
-			for _, item := range pq {
-				if item.value == destNode {
-					destNodeItem = item
-					break
-				}
-			}
-			if destNodeItem == nil {
-				continue
-			}
-
-			newDistance := currentItem.value.distance + 1
-
-			if newDistance < destNode.distance {
-				destNode.distance = newDistance
-				destNode.via = currentItem.value
-				pq.update(destNodeItem, destNode, newDistance)
-			}
-
-		}
-
-	}
-
-	return endNode.distance
-
 }
 
 type Node struct {
