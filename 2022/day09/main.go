@@ -35,16 +35,15 @@ func main() {
 
 	instructions := strings.Split(inputString, "\n")
 
-	visited1, visited2 := map[Coord]bool{Coord{0, 0}: true}, map[Coord]bool{Coord{0, 0}: true}
+	visited1 := map[Coord]bool{{0, 0}: true}
+	visited2 := map[Coord]bool{{0, 0}: true}
 
 	rope := make([]Coord, 10)
 
-	instructionSplit, direction, steps := []string{"", ""}, Coord{0, 0}, 0
-
 	for _, instruction := range instructions {
-		instructionSplit = strings.Fields(instruction)
-		direction = parseDirection(instructionSplit[0])
-		steps, _ = strconv.Atoi(instructionSplit[1])
+		instructionSplit := strings.Fields(instruction)
+		direction := parseDirection(instructionSplit[0])
+		steps, _ := strconv.Atoi(instructionSplit[1])
 
 		for stepCount := 1; stepCount <= steps; stepCount++ {
 			moveRope(rope, direction)
