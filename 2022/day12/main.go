@@ -70,13 +70,6 @@ func main() {
 
 func shortestPath(nodes map[Coord]*Node, startNode *Node, stopAtA bool) int {
 
-	endNode := &Node{}
-	for _, node := range nodes {
-		if node.end {
-			endNode = node
-		}
-	}
-
 	startNode.distance = 0
 
 	pq := make(PriorityQueue, len(nodes))
@@ -129,7 +122,7 @@ func shortestPath(nodes map[Coord]*Node, startNode *Node, stopAtA bool) int {
 
 	}
 
-	return endNode.distance
+	return -1
 }
 
 func parseMap(inputString string, invertDirection bool) map[Coord]*Node {
