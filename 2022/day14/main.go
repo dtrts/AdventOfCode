@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -32,11 +31,58 @@ func main() {
 	inputString := strings.TrimSpace(string(inputBytes))
 	// BOILER PLATE --------------------------------------------------------------------
 
-	part1 := part1(inputString)
-	part2 := part2(inputString)
-	// sandStartPointInput := "500,0"
+	settledLocations := parseRocks(inputString)
 
-	// Get lowest point  from all rocks and sand? Once a sand particle has passed
+	lowestLevel, floorLayer := 0, 0
+	for location := range settledLocations {
+		if location.y > lowestLevel {
+			lowestLevel = location.y
+		}
+	}
+	floorLayer = lowestLevel + 2
+
+	source := Coord{
+		x: 500,
+		y: 0,
+	}
+
+	part1 := -1
+	part2 := -1
+	part1Found := false
+
+	for sourceReached := false; !sourceReached; {
+		sand := Coord{x: 500, y: 0}
+
+		for sandSettled := false; !sandSettled; {
+			sandNew := descend(sand, settledLocations, floorLayer)
+
+			if sandNew == sand {
+				settledLocations[sandNew] = 2
+				sandSettled = true
+				if sandNew == source {
+					sourceReached = true
+				}
+			}
+
+			if sandNew.y > lowestLevel && !part1Found {
+				for _, typeOfSettled := range settledLocations {
+					if typeOfSettled == 2 {
+						part1++
+					}
+				}
+				part1Found = true
+			}
+
+			sand = sandNew
+		}
+	}
+
+	part2 = 0
+	for _, typeOfSettled := range settledLocations {
+		if typeOfSettled == 2 {
+			part2++
+		}
+	}
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
@@ -45,152 +91,20 @@ func main() {
 	// BOILER PLATE --------------------------------------------------------------------
 }
 
-func part2(input string) int {
-
-	p("")
-	p("Starting part 2")
-
-	settledLocations := parseRocks(input)
-
-	floorLayer := 0
-	for location := range settledLocations {
-		if location.y > floorLayer {
-			floorLayer = location.y
-		}
-	}
-	floorLayer += 2
-
-	infinityBreak := 0
-
-	source := Coord{
-		x: 500,
-		y: 0,
-	}
-
-	sourceReached := false
-	for !sourceReached {
-		sand := Coord{
-			x: 500,
-			y: 0,
-		}
-
-		sandSettled := false
-
-		for !sandSettled {
-			sandNew := descend(sand, settledLocations, floorLayer)
-
-			if sandNew == sand {
-				settledLocations[sandNew] = 2
-				p("Sand has settled", sandNew)
-				sandSettled = true
-				if sandNew == source {
-					p("Sand has settled on source")
-					sourceReached = true
-				}
-			}
-
-			sand = sandNew
-		}
-
-		infinityBreak++
-		if infinityBreak >= 1e6 {
-			p("Get outta here")
-			break
-		}
-	}
-
-	sandCount := 0
-	for _, typeOfSettled := range settledLocations {
-		if typeOfSettled == 2 {
-			sandCount++
-		}
-	}
-
-	return sandCount
-
-}
-func part1(input string) int {
-
-	settledLocations := parseRocks(input)
-
-	p(settledLocations)
-
-	abyssLayer := 0
-	for location := range settledLocations {
-		if location.y > abyssLayer {
-			abyssLayer = location.y
-		}
-	}
-
-	abyssFound := false
-	infinityBreak := 0
-
-	for !abyssFound {
-		sand := Coord{
-			x: 500,
-			y: 0,
-		}
-
-		for sand.y <= abyssLayer {
-			sandNew := descend(sand, settledLocations, math.MaxInt)
-
-			if sandNew == sand {
-				settledLocations[sandNew] = 2
-				p("Sand has settled", sandNew)
-				break
-			}
-			sand = sandNew
-		}
-
-		if sand.y > abyssLayer {
-			p("Abyss found")
-			break
-		}
-
-		infinityBreak++
-		if infinityBreak >= 1e6 {
-			p("Get outta here")
-			break
-		}
-	}
-
-	sandCount := 0
-	for _, typeOfSettled := range settledLocations {
-		if typeOfSettled == 2 {
-			sandCount++
-		}
-	}
-
-	return sandCount
-
-}
-
 func descend(sand Coord, settled map[Coord]int, floor int) Coord {
 
-	direction1 := Coord{
-		x: 0,
-		y: 1,
-	}
-	direction2 := Coord{
-		x: -1,
-		y: 1,
-	}
-	direction3 := Coord{
-		x: 1,
-		y: 1,
-	}
-
-	sand1 := move(sand, direction1)
-	sand2 := move(sand, direction2)
-	sand3 := move(sand, direction3)
-
+	sand1 := move(sand, Coord{x: 0, y: 1})
 	if _, ok := settled[sand1]; !ok && sand1.y < floor {
 		return sand1
 	}
-	if _, ok := settled[sand2]; !ok && sand1.y < floor {
+
+	sand2 := move(sand, Coord{x: -1, y: 1})
+	if _, ok := settled[sand2]; !ok && sand2.y < floor {
 		return sand2
 	}
-	if _, ok := settled[sand3]; !ok && sand1.y < floor {
+
+	sand3 := move(sand, Coord{x: 1, y: 1})
+	if _, ok := settled[sand3]; !ok && sand3.y < floor {
 		return sand3
 	}
 
