@@ -44,7 +44,7 @@ func main() {
 
 		p("")
 		p("== Pair", pair, "==")
-		inCorrectOrder := compare(left, right, 0, false)
+		inCorrectOrder := compare(left, right, 0, true)
 
 		if inCorrectOrder == 1 {
 			p("Groups in correct order. Pair:", pair)
@@ -176,88 +176,6 @@ func isDigit(s string) bool {
 	return !isList(s)
 }
 
-func compareGroups(left, right []string, nested int) bool {
-	nested++
-	p(strings.Repeat("  ", nested), "- Compare", left, "vs", right)
-
-	nested++
-	for i := range left {
-
-		if i > len(right)-1 {
-			p(strings.Repeat("  ", nested), "- Right side ran out of items, so inputs are not in the right order")
-			return false
-		}
-
-		leftItem := left[i]
-		rightItem := right[i]
-
-		if len(leftItem) == 1 && len(rightItem) == 1 {
-			leftNum, _ := strconv.Atoi(leftItem)
-			rightNum, _ := strconv.Atoi(rightItem)
-
-			p(strings.Repeat("  ", nested), "- Compare", leftNum, "vs", rightNum)
-			if leftNum < rightNum {
-				p(strings.Repeat("  ", nested+1), "- Left side is smaller, so inputs are in the right order")
-				return true
-			} else if leftNum > rightNum {
-				p(strings.Repeat("  ", nested+1), "- Right side is smaller, so inputs are not in the right order")
-				return false
-			} else {
-				continue
-			}
-
-		}
-
-		if len(leftItem) == 1 && len(rightItem) > 1 {
-			leftItem = "[" + leftItem + "]"
-			p(strings.Repeat("  ", nested), "- Mixed types; convert left to", leftItem, "and retry comparison")
-
-		}
-		if len(leftItem) > 1 && len(rightItem) == 1 {
-			rightItem = "[" + rightItem + "]"
-			p(strings.Repeat("  ", nested), "- Mixed types; convert left to", rightItem, "and retry comparison")
-		}
-
-		if len(leftItem) > 1 && len(rightItem) > 1 {
-			// p(strings.Repeat("  ", nested), "Comparing two groups:", leftItem, "and", rightItem)
-			leftGroups := parseGroups(leftItem)
-			rightGroups := parseGroups(rightItem)
-
-			// p(strings.Repeat("  ", nested), "New Groups:", leftGroups, "and", rightGroups)
-			// if len(rightGroups) < len(leftGroups) {
-			// 	p(strings.Repeat("  ", nested), "Test failed, length left less than left right:", len(leftGroups), "and", len(rightGroups))
-			// 	return false
-			// }
-
-			groupCompare := compareGroups(leftGroups, rightGroups, nested)
-			if groupCompare && len(leftGroups) == len(rightGroups) {
-				continue
-			}
-
-			return groupCompare
-		}
-
-	}
-
-	p(strings.Repeat("  ", nested), "- Left side ran out of items, so inputs in the right order")
-
-	return true
-	// If both values are integers, the lower integer should come first. If the left integer is lower than the right integer, the
-	// inputs are in the right order. If the left integer is higher than the right integer, the inputs are not in the right order.
-	// Otherwise, the inputs are the same integer; continue checking the next part of the input.
-
-	// If both values are lists, compare the first value of each list, then the second value, and so on. If the left list runs out
-	// of items first, the inputs are in the right order. If the right list runs out of items first, the inputs are not in the
-	// right order. If the lists are the same length and no comparison makes a decision about the order, continue checking the
-	// next part of the input.
-	// len(r) < len(l) return false
-
-	// If exactly one value is an integer, convert the integer to a list which contains that integer as its only value, then retry
-	// the comparison. For example, if comparing [0,0,0] and 2, convert the right value to [2] (a list containing 2); the result
-	// is then found by instead comparing [0,0,0] and [2].
-
-}
-
 func parseGroups(s string) (ret []string) {
 
 	// p("Start parse", s, len(s))
@@ -275,7 +193,7 @@ func parseGroups(s string) (ret []string) {
 			continue
 		}
 
-		if char == "]" {
+		if char == "]" { // [[]] -> ['[]']
 			nestedCount--
 
 			if nestedCount == -1 {
