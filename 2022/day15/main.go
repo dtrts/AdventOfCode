@@ -89,6 +89,9 @@ func main() {
 		}
 	}
 
+	log.Printf("Duration: %s", time.Since(start))
+	p("Part1:", noBeaconCount)
+
 	checkBox := 4000000
 	if inputFileName == "input-test.txt" {
 		checkBox = 20
@@ -125,8 +128,8 @@ doubleLoop:
 	}
 
 	// BOILER PLATE --------------------------------------------------------------------
+
 	log.Printf("Duration: %s", time.Since(start))
-	p("Part1:", noBeaconCount)
 	p("Part2:", emptySpace.x*4000000+emptySpace.y)
 	// BOILER PLATE --------------------------------------------------------------------
 }
