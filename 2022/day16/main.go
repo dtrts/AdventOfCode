@@ -30,14 +30,16 @@ func main() {
 	}
 
 	inputString := strings.TrimSpace(string(inputBytes))
-	var part1, part2 int
-	// p("Input string", inputString)
 	// BOILER PLATE --------------------------------------------------------------------
+
+	var part1, part2 int
 
 	valvesRaw := parseInput(inputString)
 
 	startNodes := []string{"AA"}
+
 	flowNodes := []string{}
+
 	for _, valve := range valvesRaw {
 		if valve.flowRate > 0 {
 			startNodes = append(startNodes, valve.name)
@@ -47,33 +49,17 @@ func main() {
 
 	valves := generateCondensedMap(inputString, startNodes)
 
-	// Okay I now have a condensed map, and a list of remaining valves to open.
-	//
-
-	p(valves)
-	for k, v := range valves {
-		p(k, v)
-	}
-
-	p(startNodes, flowNodes)
-
-	cache := make(map[string]int, 0)
-	part1 = pressureRelease(valves, flowNodes, []string{}, 30, cache)
+	part1 = pressureRelease(valves, flowNodes, []string{}, 30)
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
 	p("Part1:", part1) // 1651 (Test) // 1751
 	// BOILER PLATE --------------------------------------------------------------------
-	cache = make(map[string]int, 0)
-	cachePR := make(map[string]int, 0)
 
-	// part2 = pressureReleases(valves, flowNodes, [2][]string{make([]string, 0), make([]string, 0)})
-	part2 = hmm(valves, flowNodes, make([]string, 0), 26, cache, cachePR)
-	// 10 -> 4.7
-
+	part2 = hmm(valves, flowNodes, make([]string, 0), 26)
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
-	p("Part2:", part2) // 1707 (Test) //
+	p("Part2:", part2) // 1707 (Test) // 2207. Takes 10 minutes to calculate.
 	// BOILER PLATE --------------------------------------------------------------------
 
 }
@@ -91,14 +77,8 @@ func remove(s []string, i int) []string {
 
 // }
 
-func hmm(condensedMap map[string]*Valve, remainingValves []string, currentRoute []string, timeLimit int, cache map[string]int, cachePR map[string]int) int {
-
-	key := strings.Join(remainingValves, ",") + "|" + strings.Join(currentRoute, ",")
-	if val, ok := cache[key]; ok {
-		return val
-	}
-
-	currentScore := totalScore(condensedMap, currentRoute, timeLimit) + pressureRelease(condensedMap, remainingValves, make([]string, 0), timeLimit, cachePR)
+func hmm(condensedMap map[string]*Valve, remainingValves []string, currentRoute []string, timeLimit int) int {
+	currentScore := totalScore(condensedMap, currentRoute, timeLimit) + pressureRelease(condensedMap, remainingValves, make([]string, 0), timeLimit)
 
 	for i, nextValve := range remainingValves {
 
@@ -109,48 +89,35 @@ func hmm(condensedMap map[string]*Valve, remainingValves []string, currentRoute 
 		}
 
 		newRemaining := remove(remainingValves, i)
-		newScore := hmm(condensedMap, newRemaining, newRoute, timeLimit, cache, cachePR)
+		newScore := hmm(condensedMap, newRemaining, newRoute, timeLimit)
 
 		if newScore > currentScore {
 			currentScore = newScore
 		}
 	}
 
-	cache[key] = currentScore
 	return currentScore
-
 }
 
-func pressureRelease(condensedMap map[string]*Valve, remainingValves []string, currentRoute []string, timeLimit int, cache map[string]int) int {
-
-	key := strings.Join(remainingValves, ",") + "|" + strings.Join(currentRoute, ",")
-	if val, ok := cache[key]; ok {
-		return val
-	}
-
+func pressureRelease(condensedMap map[string]*Valve, remainingValves []string, currentRoute []string, timeLimit int) int {
 	currentScore := totalScore(condensedMap, currentRoute, timeLimit)
 
 	for i, nextValve := range remainingValves {
-
-		// If the sum of the times +
 		newRoute := append(currentRoute, nextValve)
+
 		if totalTime(condensedMap, newRoute) > timeLimit {
 			continue
 		}
 
-		newRemaining := make([]string, len(remainingValves[:i]))
-		copy(newRemaining, remainingValves[:i])
-		newRemaining = append(newRemaining, remainingValves[i+1:]...)
+		newRemaining := remove(remainingValves, i)
 
-		newScore := pressureRelease(condensedMap, newRemaining, newRoute, timeLimit, cache)
+		newScore := pressureRelease(condensedMap, newRemaining, newRoute, timeLimit)
 		if newScore > currentScore {
 			currentScore = newScore
 		}
 	}
 
-	cache[key] = currentScore
 	return currentScore
-
 }
 
 func totalTime(condensedMap map[string]*Valve, route []string) int {
@@ -166,7 +133,6 @@ func totalTime(condensedMap map[string]*Valve, route []string) int {
 }
 
 func totalScore(condensedMap map[string]*Valve, route []string, timeLimit int) int {
-
 	totalScore := 0
 	timeRemaining := timeLimit
 	currValve := "AA"
@@ -180,6 +146,7 @@ func totalScore(condensedMap map[string]*Valve, route []string, timeLimit int) i
 		totalScore += (timeRemaining * condensedMap[valve].flowRate)
 		currValve = valve
 	}
+
 	return totalScore
 }
 
