@@ -1,11 +1,12 @@
 package main
 
 import (
+	"container/heap"
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
-	"sort"
 	"strings"
 	"time"
 )
@@ -29,59 +30,41 @@ func main() {
 	}
 
 	inputString := strings.TrimSpace(string(inputBytes))
+	var part1, part2 int
 	// p("Input string", inputString)
 	// BOILER PLATE --------------------------------------------------------------------
 
 	valvesRaw := parseInput(inputString)
 
-	startNode := valvesRaw["AA"]
-	maxReleased := make(map[State]int, 0)
-
-	possibleOpenValves := ""
-
+	startNodes := []string{"AA"}
+	flowNodes := []string{}
 	for _, valve := range valvesRaw {
 		if valve.flowRate > 0 {
-			possibleOpenValves = addOpenValve(valve.name, possibleOpenValves)
+			startNodes = append(startNodes, valve.name)
+			flowNodes = append(flowNodes, valve.name)
 		}
 	}
 
-	p(possibleOpenValves)
+	valves := generateCondensedMap(inputString, startNodes)
 
-	p(valvesRaw)
+	// Okay I now have a condensed map, and a list of remaining valves to open.
+	//
 
-	startState := State{
-		valve:              startNode,
-		time:               0,
-		flow:               0,
-		flowRate:           0,
-		openValves:         "",
-		possibleOpenValves: possibleOpenValves,
+	p(valves)
+	for k, v := range valves {
+		p(k, v)
 	}
 
-	part1 := maxRelease2(valvesRaw, startState, maxReleased, 0)
+	p(startNodes, flowNodes)
 
-	p("Calculating Part 1....")
-
-	p("Calculating Part 2....")
+	part1 = pressureRelease(valves, flowNodes, []string{})
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
 	p("Part1:", part1) // 1651 (Test) // 1751
 	// BOILER PLATE --------------------------------------------------------------------
 
-	startStateElephant := ElephantState{
-		valve:              startNode,
-		elephantValve:      startNode,
-		time:               0,
-		flow:               0,
-		flowRate:           0,
-		openValves:         "",
-		possibleOpenValves: possibleOpenValves,
-	}
-
-	maxReleasedElephant := make(map[ElephantState]int, 0)
-
-	part2 := elephantRelease(valvesRaw, startStateElephant, maxReleasedElephant, 0)
+	part2 = pressureReleases(valves, flowNodes, [2][]string{make([]string, 0), make([]string, 0)})
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
@@ -90,173 +73,183 @@ func main() {
 
 }
 
-type State struct {
-	valve              *Valve
-	time               int
-	flow               int
-	flowRate           int
-	openValves         string
-	possibleOpenValves string
-}
+func pressureReleases(condensedMap map[string]*Valve, remainingValves []string, currentRoutes [2][]string) int {
 
-type ElephantState struct {
-	valve              *Valve
-	elephantValve      *Valve
-	time               int
-	flow               int
-	flowRate           int
-	openValves         string
-	possibleOpenValves string
-}
+	currentScore := totalScore(condensedMap, currentRoutes[0], 26) + totalScore(condensedMap, currentRoutes[1], 26)
 
-func elephantRelease(valves map[string]*Valve, currentState ElephantState, maxReleased map[ElephantState]int, nested int) int {
+	for i, nextValue := range remainingValves {
 
-	if val, ok := maxReleased[currentState]; ok {
-		return val
-	}
+		newRemaining := make([]string, len(remainingValves[:i]))
+		copy(newRemaining, remainingValves[:i])
+		newRemaining = append(newRemaining, remainingValves[i+1:]...)
 
-	maxToBeat := currentState.flow + (currentState.flowRate * (26 - currentState.time))
+		newRoute00 := make([]string, len(currentRoutes[0]))
+		copy(newRoute00, currentRoutes[0])
+		newRoute00 = append(newRoute00, nextValue)
 
-	if currentState.openValves == currentState.possibleOpenValves || currentState.time == 26 {
-		maxReleased[currentState] = maxToBeat
-		eValve := currentState.elephantValve
-		currentState.elephantValve = currentState.valve
-		currentState.valve = eValve
-		maxReleased[currentState] = maxToBeat
+		newRoute01 := make([]string, len(currentRoutes[1]))
+		copy(newRoute01, currentRoutes[1])
 
-		return maxToBeat
-	}
-
-	tunnelsToCheck := currentState.valve.tunnels
-	if currentState.valve.flowRate > 0 && !isValveOpen(currentState.valve.name, currentState.openValves) {
-		// tunnelsToCheck = append(tunnelsToCheck, Tunnel{dest: currentState.valve, destName: currentState.valve.name, distance: 1})
-		tunnelsToCheck = []Tunnel{{dest: currentState.valve, destName: currentState.valve.name, distance: 1}}
-
-	}
-
-	tunnelsToCheckElephant := currentState.elephantValve.tunnels
-	if currentState.valve != currentState.elephantValve && currentState.elephantValve.flowRate > 0 && !isValveOpen(currentState.elephantValve.name, currentState.openValves) {
-		// tunnelsToCheckElephant = append(tunnelsToCheckElephant, Tunnel{dest: currentState.elephantValve, destName: currentState.elephantValve.name, distance: 1})
-		tunnelsToCheckElephant = []Tunnel{{dest: currentState.elephantValve, destName: currentState.elephantValve.name, distance: 1}}
-	}
-
-	for _, tunnel := range tunnelsToCheck {
-		for _, tunnelElephant := range tunnelsToCheckElephant {
-
-			newState := ElephantState{
-				valve:              tunnel.dest,
-				elephantValve:      tunnelElephant.dest,
-				time:               currentState.time + tunnel.distance,
-				flow:               currentState.flow + currentState.flowRate,
-				flowRate:           currentState.flowRate,
-				openValves:         currentState.openValves,
-				possibleOpenValves: currentState.possibleOpenValves,
-			}
-
-			if newState.valve == currentState.valve {
-				newState.flowRate += newState.valve.flowRate
-				newState.openValves = addOpenValve(newState.valve.name, newState.openValves)
-			}
-
-			if newState.elephantValve == currentState.elephantValve {
-				newState.flowRate += newState.elephantValve.flowRate
-				newState.openValves = addOpenValve(newState.elephantValve.name, newState.openValves)
-			}
-
-			destinationMax := elephantRelease(valves, newState, maxReleased, nested+1)
-
-			if destinationMax > maxToBeat {
-				maxToBeat = destinationMax
+		if totalTime(condensedMap, newRoute00) <= 26 {
+			newScore0 := pressureReleases(condensedMap, newRemaining, [2][]string{newRoute00, newRoute01})
+			if newScore0 > currentScore {
+				currentScore = newScore0
 			}
 		}
+
+		newRoute10 := make([]string, len(currentRoutes[0]))
+		copy(newRoute10, currentRoutes[0])
+
+		newRoute11 := make([]string, len(currentRoutes[1]))
+		copy(newRoute11, currentRoutes[1])
+		newRoute11 = append(newRoute11, nextValue)
+
+		if totalTime(condensedMap, newRoute11) <= 26 {
+
+			newScore1 := pressureReleases(condensedMap, newRemaining, [2][]string{newRoute10, newRoute11})
+			if newScore1 > currentScore {
+				currentScore = newScore1
+			}
+		}
+
 	}
 
-	maxReleased[currentState] = maxToBeat
-	eValve := currentState.elephantValve
-	currentState.elephantValve = currentState.valve
-	currentState.valve = eValve
-	maxReleased[currentState] = maxToBeat
-
-	return maxToBeat
+	return currentScore
 }
 
-func maxRelease2(valves map[string]*Valve, currentState State, maxReleased map[State]int, nested int) int {
+func pressureRelease(condensedMap map[string]*Valve, remainingValves []string, currentRoute []string) int {
 
-	if val, ok := maxReleased[currentState]; ok {
-		// p("Found Cache", currentState)
-		return val
-	}
+	currentScore := totalScore(condensedMap, currentRoute, 30)
 
-	maxToBeat := currentState.flow + (currentState.flowRate * (30 - currentState.time))
+	for i, nextValve := range remainingValves {
 
-	if currentState.openValves == currentState.possibleOpenValves {
-		maxReleased[currentState] = maxToBeat
-		return maxToBeat
-	}
-
-	tunnelsToCheck := currentState.valve.tunnels
-
-	if currentState.valve.flowRate > 0 && !isValveOpen(currentState.valve.name, currentState.openValves) {
-		// tunnelsToCheck = append(tunnelsToCheck, Tunnel{dest: currentState.valve, destName: currentState.valve.name, distance: 1})
-		tunnelsToCheck = []Tunnel{{dest: currentState.valve, destName: currentState.valve.name, distance: 1}}
-	}
-
-	for _, tunnel := range tunnelsToCheck {
-
-		newState := State{
-			valve:              tunnel.dest,
-			time:               currentState.time + tunnel.distance,
-			flow:               currentState.flow + currentState.flowRate,
-			flowRate:           currentState.flowRate,
-			openValves:         currentState.openValves,
-			possibleOpenValves: currentState.possibleOpenValves,
-		}
-
-		if newState.valve == currentState.valve {
-			newState.flowRate += newState.valve.flowRate
-			newState.openValves = addOpenValve(newState.valve.name, currentState.openValves)
-		}
-
-		if newState.time > 30 {
+		// If the sum of the times +
+		newRoute := append(currentRoute, nextValve)
+		if totalTime(condensedMap, newRoute) > 30 {
 			continue
 		}
 
-		destinationMax := maxRelease2(valves, newState, maxReleased, nested+1)
+		newRemaining := make([]string, len(remainingValves[:i]))
+		copy(newRemaining, remainingValves[:i])
+		newRemaining = append(newRemaining, remainingValves[i+1:]...)
 
-		if destinationMax > maxToBeat {
-			maxToBeat = destinationMax
+		newScore := pressureRelease(condensedMap, newRemaining, newRoute)
+		if newScore > currentScore {
+			currentScore = newScore
 		}
 	}
 
-	maxReleased[currentState] = maxToBeat
-	return maxToBeat
+	return currentScore
+
 }
 
-func isValveOpen(valve string, openValves string) bool {
+func totalTime(condensedMap map[string]*Valve, route []string) int {
 
-	openValvesSplit := strings.Split(openValves, ",")
-	for _, openValve := range openValvesSplit {
-		if openValve == valve {
-			return true
-		}
+	time := 0
+	currValve := "AA"
+	for _, valve := range route {
+		time += condensedMap[currValve].tunnels[valve] + 1
+		currValve = valve
 	}
-	return false
+
+	return time
 }
 
-func addOpenValve(valve string, openValves string) string {
-	openValvesSplit := strings.Split(openValves, ",")
+func totalScore(condensedMap map[string]*Valve, route []string, timeLimit int) int {
 
-	for _, openValve := range openValvesSplit {
-		if openValve == valve {
-			return openValves
+	totalScore := 0
+	timeRemaining := timeLimit
+	currValve := "AA"
+	for _, valve := range route {
+
+		timeRemaining -= (condensedMap[currValve].tunnels[valve] + 1)
+
+		if timeRemaining <= 0 {
+			break
+		}
+		totalScore += (timeRemaining * condensedMap[valve].flowRate)
+		currValve = valve
+	}
+	return totalScore
+}
+
+func generateCondensedMap(input string, startNodes []string) map[string]*Valve {
+
+	p("Generating condensed map")
+
+	condensedMap := parseInput(input)
+
+	// For each key, check if in start nodes. Otherwise delete
+	for condensedKey, _ := range condensedMap {
+
+		contains := false
+		for _, startNode := range startNodes {
+			if startNode == condensedKey {
+				contains = true
+			}
+		}
+
+		if !contains {
+			delete(condensedMap, condensedKey)
 		}
 	}
 
-	openValvesSplit = append(openValvesSplit, valve)
+	for _, startNode := range startNodes {
+		freshValves := parseInput(input)
 
-	sort.Strings(openValvesSplit)
+		condensedMap[startNode].tunnels = generateTunnels(startNode, freshValves)
+	}
 
-	return strings.Join(openValvesSplit, ",")
+	p("Condensed map")
+	for _, node := range condensedMap {
+		p(node)
+	}
+
+	return condensedMap
+}
+
+func generateTunnels(startNode string, valves map[string]*Valve) map[string]int {
+
+	// p("Generate Tunnels", startNode)
+
+	pq := make(PriorityQueue, len(valves))
+	i := 0
+	for _, valve := range valves {
+		pq[i] = valve
+		pq[i].index = i
+
+		if valve.name == startNode {
+			pq[i].priority = 0
+		} else {
+			pq[i].priority = math.MaxInt
+		}
+		i++
+	}
+
+	heap.Init(&pq)
+
+	for len(pq) > 0 {
+		currentValve := heap.Pop(&pq).(*Valve)
+
+		for tunnelName, distance := range currentValve.tunnels {
+
+			destinationPriority := currentValve.priority + distance
+
+			if destinationPriority < valves[tunnelName].priority {
+				pq.update(valves[tunnelName], destinationPriority)
+			}
+		}
+	}
+
+	tunnels := make(map[string]int, 0)
+
+	for _, valve := range valves {
+		if valve.flowRate > 0 && valve.name != startNode {
+			tunnels[valve.name] = valve.priority
+		}
+	}
+
+	return tunnels
 }
 
 func parseInput(input string) map[string]*Valve {
@@ -275,51 +268,72 @@ func parseInput(input string) map[string]*Valve {
 		inputLineSplit[1] = strings.TrimPrefix(inputLineSplit[1], "tunnels lead to valves ")
 		inputLineSplit[1] = strings.TrimPrefix(inputLineSplit[1], "tunnel leads to valve ")
 
-		destNames := strings.Split(inputLineSplit[1], ", ")
+		tunnelNames := strings.Split(inputLineSplit[1], ", ")
+
+		tunnels := make(map[string]int, 0)
+
+		for _, tunnelName := range tunnelNames {
+			tunnels[tunnelName] = 1
+		}
 
 		// p(inputLine, valveName, flowRate, destNames)
 
 		valves[valveName] = &Valve{
-			name:      valveName,
-			flowRate:  flowRate,
-			destNames: destNames,
-			open:      flowRate == 0, // Act as if open already when flow rate is 0
+			name:     valveName,
+			flowRate: flowRate,
+			tunnels:  tunnels,
 		}
 
-	}
-
-	for _, valve := range valves {
-
-		for _, destName := range valve.destNames {
-			valve.tunnels = append(valve.tunnels, Tunnel{
-				dest:     valves[destName],
-				destName: destName,
-				distance: 1,
-			})
-		}
 	}
 
 	return valves
 }
 
-type Tunnel struct {
-	dest     *Valve
-	destName string
-	distance int
-}
-
 type Valve struct {
-	name      string
-	flowRate  int
-	destNames []string
-	tunnels   []Tunnel
-	open      bool
-
-	// For path searching
-	timeTaken    int
-	flowReleased int
+	name     string
+	flowRate int
+	tunnels  map[string]int
 
 	// For managing in a Priority Queue
 	priority int
 	index    int
+}
+
+// Implementing Dijkstra for finding new graph of valves only
+
+type PriorityQueue []*Valve
+
+func (pq PriorityQueue) Len() int { return len(pq) }
+
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i].priority < pq[j].priority
+}
+
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+	pq[i].index = i
+	pq[j].index = j
+}
+
+func (pq *PriorityQueue) Push(x any) {
+	n := len(*pq)
+	item := x.(*Valve)
+	item.index = n
+	*pq = append(*pq, item)
+}
+
+func (pq *PriorityQueue) Pop() any {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil  // avoid memory leak
+	item.index = -1 // for safety
+	*pq = old[0 : n-1]
+	return item
+}
+
+// update modifies the priority and value of an Item in the queue.
+func (pq *PriorityQueue) update(item *Valve, priority int) {
+	item.priority = priority
+	heap.Fix(pq, item.index)
 }
