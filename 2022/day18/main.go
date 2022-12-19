@@ -35,6 +35,34 @@ func main() {
 	points := parseInput(inputString)
 	part1 := getExposedSides(points)
 
+	// Print slice map of lava droplet
+	/*
+		for x := min.x; x <= max.x; x++ {
+			p("== X Slice", x, "==")
+			for y := min.y; y <= max.y; y++ {
+				for z := min.z; z <= max.z; z++ {
+					point := Coord{x, y, z}
+
+					if _, ok := boundingBox[point]; ok {
+						fmt.Printf("#")
+					} else if _, ok := points[point]; ok {
+						fmt.Printf("X")
+					} else {
+						fmt.Printf(".")
+					}
+				}
+				fmt.Printf("\n")
+			}
+			fmt.Printf("\n")
+		}
+	*/
+
+	// BOILER PLATE --------------------------------------------------------------------
+	log.Printf("Duration: %s", time.Since(start))
+	p("Part1:", part1)
+
+	// BOILER PLATE --------------------------------------------------------------------
+
 	boundingBox := fillBoundingBox(points)
 
 	boundingBoxSurfaceArea := getExposedSides(boundingBox)
@@ -47,29 +75,8 @@ func main() {
 
 	part2 := boundingBoxSurfaceArea - externalSurfaceArea
 
-	// Print slice map of lava droplet
-	for x := min.x; x <= max.x; x++ {
-		p("== X Slice", x, "==")
-		for y := min.y; y <= max.y; y++ {
-			for z := min.z; z <= max.z; z++ {
-				point := Coord{x, y, z}
-
-				if _, ok := boundingBox[point]; ok {
-					fmt.Printf("#")
-				} else if _, ok := points[point]; ok {
-					fmt.Printf("X")
-				} else {
-					fmt.Printf(".")
-				}
-			}
-			fmt.Printf("\n")
-		}
-		fmt.Printf("\n")
-	}
-
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
-	p("Part1:", part1)
 	p("Part2:", part2)
 	// BOILER PLATE --------------------------------------------------------------------
 }
