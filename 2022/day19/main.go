@@ -53,7 +53,7 @@ func main() {
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
-	p("Part1:", part1)
+	p("Part1:", part1) //1144
 	// BOILER PLATE --------------------------------------------------------------------
 
 	part2 := 1
@@ -68,7 +68,7 @@ func main() {
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
-	p("Part2:", part2)
+	p("Part2:", part2) //19980
 	// BOILER PLATE --------------------------------------------------------------------
 }
 
@@ -191,22 +191,34 @@ func getMaxGeodes(minutes int, state State, blueprint *RobotRecipe, cache map[St
 func updateState(state *State, blueprint *RobotRecipe, maxOre int, minutes int) {
 
 	state.time++
+	minutesRemaining := minutes - state.time + 1
+
 	// state.ore = min(state.ore+state.oreRobots, maxOre)
 	// state.clay = min(state.clay+state.clayRobots, blueprint.obsidian.clay)
 	// state.obsidian = min(state.obsidian+state.obsidianRobots, blueprint.geode.obsidian)
+	maximumOreCanBeSpent := minutesRemaining * (maxOre - state.oreRobots + 1)
 	if state.oreRobots >= maxOre {
 		state.ore = maxOre
+	} else if maximumOreCanBeSpent < state.ore+state.oreRobots {
+		state.ore = maximumOreCanBeSpent
 	} else {
 		state.ore += state.oreRobots
 	}
+
+	maximumClayCanBeSpent := minutesRemaining * (blueprint.obsidian.clay - state.clayRobots + 1)
 	if state.clayRobots >= blueprint.obsidian.clay {
 		state.clay = blueprint.obsidian.clay
+	} else if maximumClayCanBeSpent < state.clay+state.clayRobots {
+		state.clay = maximumClayCanBeSpent
 	} else {
 		state.clay += state.clayRobots
 	}
 
+	maximumObsidianCanBeSpent := minutesRemaining * (blueprint.geode.obsidian - state.obsidianRobots + 1)
 	if state.obsidianRobots >= blueprint.geode.obsidian {
 		state.obsidian = blueprint.geode.obsidian
+	} else if maximumObsidianCanBeSpent < state.obsidian+state.obsidianRobots {
+		state.obsidian = maximumObsidianCanBeSpent
 	} else {
 		state.obsidian += state.obsidianRobots
 	}
