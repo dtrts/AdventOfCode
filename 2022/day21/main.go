@@ -31,78 +31,39 @@ func main() {
 	inputString := strings.TrimSpace(string(inputBytes))
 
 	// BOILER PLATE --------------------------------------------------------------------
-	// Monkey names are unique
+
 	monkeys := parseInput(inputString)
 
-	mathMonkeysToCalc := getMathMonkeysToCalc(monkeys)
-
-	iteration := 0
-	for len(mathMonkeysToCalc) > 0 {
-		p("Starting iteration", iteration, "with", len(mathMonkeysToCalc), "monkey(s)")
-
-		for _, mathMonkey := range mathMonkeysToCalc {
-
-			mathMonkey.calculateValue(iteration + 1)
-
-		}
-
-		mathMonkeysToCalc = getMathMonkeysToCalc(monkeys)
-		iteration++
-	}
-
-	p("Iterations", iteration)
-	part1 := 0
-	for _, monkey := range monkeys {
-		if monkey.iteration == iteration {
-			part1 = monkey.value
-		}
-	}
+	monkeys["root"].collapseMonkey("")
 
 	// BOILER PLATE --------------------------------------------------------------------
 	log.Printf("Duration: %s", time.Since(start))
-	p("Part1:", part1)
+	p("Part1:", monkeys["root"].value)
 	// BOILER PLATE --------------------------------------------------------------------
 	p("Calculating Part 2....")
 
 	monkeys = parseInput(inputString)
-	monkeys["humn"].isMath, monkeys["humn"].isNumber = true, false
-
+	humanName := "humn"
 	for i := range [2]int{0, 1} {
-		monkeys["root"].parents[i].collapseMonkey()
+		monkeys["root"].parents[i].collapseMonkey(humanName)
 	}
 
-	// p(monkeys["root"])
-	// p(monkeys["root"].parents[0])
-	// p(monkeys["root"].parents[1])
-	// p(equalityMonkey)
-	// p(humanMonkeyRoot)
-
-	monkeys["humn"].isMath, monkeys["humn"].isNumber = false, true
-
-	// curMonk := monkeys["humn"]
-	// for curMonk != nil {
-	// 	p(curMonk)
-	// 	curMonk = curMonk.child
-	// }
-
 	currentMonkey := monkeys["root"]
-	humanMonkey, valueMonkey := currentMonkey.parentSplit()
+	humanMonkey, valueMonkey := currentMonkey.parentSplit(humanName)
 	matchingValue := valueMonkey.value
 	currentMonkey = humanMonkey
 
-	for currentMonkey.name != "humn" {
+	for currentMonkey.name != humanName {
 
-		humanMonkey, valueMonkey = currentMonkey.parentSplit()
-		p("Current Monkey", currentMonkey)
-		p("Current Value", matchingValue)
-		p("Human Monkey", humanMonkey)
-		p("Value Monkey", valueMonkey)
+		humanMonkey, valueMonkey = currentMonkey.parentSplit(humanName)
 
 		switch currentMonkey.operation {
 		case "*":
 			matchingValue = matchingValue / valueMonkey.value
+
 		case "+":
 			matchingValue = matchingValue - valueMonkey.value
+
 		case "-":
 			if currentMonkey.parents[0] == humanMonkey {
 				matchingValue = matchingValue + valueMonkey.value
@@ -116,9 +77,11 @@ func main() {
 			} else {
 				matchingValue = valueMonkey.value / matchingValue
 			}
+
 		default:
 			panic("Unable to handle operation case")
 		}
+
 		currentMonkey = humanMonkey
 	}
 
@@ -128,49 +91,31 @@ func main() {
 	// BOILER PLATE --------------------------------------------------------------------
 }
 
-func (monkey *Monkey) parentSplit() (*Monkey, *Monkey) {
+func (monkey *Monkey) parentSplit(humanName string) (*Monkey, *Monkey) {
 
-	if monkey.parents[0].isMath || monkey.parents[0].name == "humn" {
+	if monkey.parents[0].isMath || monkey.parents[0].name == humanName {
 		return monkey.parents[0], monkey.parents[1]
 	}
 
 	return monkey.parents[1], monkey.parents[0]
 }
 
-func calcValue(monkey *Monkey) int {
-	valueRet := 0
-
-	switch monkey.operation {
-	case "*":
-		valueRet = calcValue(monkey.parents[0]) * calcValue(monkey.parents[1])
-	case "+":
-		valueRet = calcValue(monkey.parents[0]) + calcValue(monkey.parents[1])
-	case "-":
-		valueRet = calcValue(monkey.parents[0]) - calcValue(monkey.parents[1])
-	case "/":
-		valueRet = calcValue(monkey.parents[0]) / calcValue(monkey.parents[1])
-	case "":
-		valueRet = monkey.value
-	default:
-		panic("Unable to handle operation case")
-	}
-
-	return valueRet
-}
-
-func (monkey *Monkey) collapseMonkey() *Monkey {
+func (monkey *Monkey) collapseMonkey(humanName string) {
 
 	if monkey.isMath {
 		parentsNowBothValue := true
+
+		// Run collapse on both parents.
+		// If both collapse successfully then you can update current monkey to a Value type
 		for i := range [2]int{0, 1} {
 
-			if monkey.parents[i].name == "humn" {
+			if monkey.parents[i].name == humanName {
 				parentsNowBothValue = false
 				continue
 			}
 
 			if monkey.parents[i].isMath {
-				monkey.parents[i].collapseMonkey()
+				monkey.parents[i].collapseMonkey(humanName)
 			}
 
 			if monkey.parents[i].isMath {
@@ -193,11 +138,8 @@ func (monkey *Monkey) collapseMonkey() *Monkey {
 			}
 
 			monkey.isMath = false
-			monkey.isNumber = true
 		}
 	}
-
-	return monkey
 
 }
 
@@ -211,14 +153,10 @@ func parseInput(input string) map[string]*Monkey {
 		operationFields := strings.Fields(lineSplit[1])
 
 		newMonkey := &Monkey{
-			name:      name,
-			iteration: -1,
+			name: name,
 		}
 
 		if len(operationFields) == 1 {
-
-			newMonkey.isNumber = true
-
 			newMonkey.value, _ = strconv.Atoi(operationFields[0])
 
 		} else if len(operationFields) == 3 {
@@ -241,12 +179,6 @@ func parseInput(input string) map[string]*Monkey {
 		if monkey.isMath {
 			for i, parentName := range monkey.parentNames {
 				monkey.parents[i] = monkeys[parentName]
-
-				if monkeys[parentName].child != nil {
-					panic("Parsing input child fail")
-				}
-				monkeys[parentName].child = monkey
-
 			}
 
 		}
@@ -260,64 +192,6 @@ type Monkey struct {
 	operation   string
 	parentNames [2]string
 	parents     [2]*Monkey
-	child       *Monkey
-	isNumber    bool
 	value       int
 	isMath      bool
-	iteration   int
 }
-
-func getMathMonkeysToCalc(monkeys map[string]*Monkey) []*Monkey {
-	retMonkeys := []*Monkey{}
-
-	for _, monkey := range monkeys {
-		// Need it to be a math monkey
-		// Need parents to be a number or calculated
-		if monkey.isNumber || monkey.iteration >= 0 {
-			continue
-		}
-
-		parent0Ready := monkey.parents[0].isNumber || monkey.parents[0].iteration >= 0
-		parent1Ready := monkey.parents[1].isNumber || monkey.parents[1].iteration >= 0
-
-		if monkey.isMath && parent0Ready && parent1Ready {
-
-			retMonkeys = append(retMonkeys, monkey)
-
-		}
-
-	}
-	return retMonkeys
-}
-
-func (monkey *Monkey) calculateValue(iteration int) {
-
-	monkey.iteration = iteration
-
-	if monkey.isMath {
-
-		for i := range [2]int{0, 1} {
-			if monkey.parents[i].iteration < 0 {
-				monkey.parents[i].iteration = iteration
-			}
-		}
-
-		switch monkey.operation {
-		case "*":
-			monkey.value = monkey.parents[0].value * monkey.parents[1].value
-		case "+":
-			monkey.value = monkey.parents[0].value + monkey.parents[1].value
-		case "-":
-			monkey.value = monkey.parents[0].value - monkey.parents[1].value
-		case "/":
-			monkey.value = monkey.parents[0].value / monkey.parents[1].value
-		default:
-			panic("Unable to handle operation case")
-
-		}
-	}
-
-}
-
-// Generate the monkey tree.
-//
