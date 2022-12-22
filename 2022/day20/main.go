@@ -79,7 +79,7 @@ func parseInput(input string, decryptionKey int) ([]*ring.Ring, *ring.Ring) {
 
 		r.Value = nodeValue{
 			value: num * decryptionKey,
-			move:  (num * decryptionKey) % (ringLen - 1)
+			move:  (num * decryptionKey) % (ringLen - 1),
 		}
 
 		originalOrder = append(originalOrder, r)
