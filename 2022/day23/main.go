@@ -52,7 +52,7 @@ func main() {
 		fmt.Printf("=== End of Round %d ===\n", iteration+1)
 		p("Elves Moved", elvesMoved)
 		p("len elves", len(elves))
-		printElves(elves, 0)
+		// printElves(elves, 0)
 		p("")
 
 		if iteration+1 == 10 {
@@ -78,13 +78,14 @@ type Elf struct {
 	position         Coord
 	proposedPosition Coord
 	surroundingElves map[string]int
+	canMove          bool
 }
 
 func updatePositions(elves map[Coord]*Elf, proposedPositions map[Coord]int) int {
 	elvesMoved := 0
 
 	for pos, elf := range elves {
-		if elf.surroundingElves["A"] >= 1 {
+		if elf.surroundingElves["A"] >= 1 && elf.canMove {
 			if proposedPositions[elf.proposedPosition] == 1 {
 				elvesMoved++
 				delete(elves, pos)
@@ -103,15 +104,22 @@ func updateProposedPositions(elves map[Coord]*Elf, iteration int) map[Coord]int 
 	proposedPositions := make(map[Coord]int, 0)
 
 	for _, elf := range elves {
+		elf.proposedPosition = Coord{0, 0}
+		elf.canMove = false
 		if elf.surroundingElves["A"] >= 1 {
 			for i := 0; i < 4; i++ {
+
 				direction := searchOrder[(iteration+i)%4]
 				if elf.surroundingElves[direction] == 0 {
+
 					elf.proposedPosition = directionProposedPosition(elf.position, direction)
+
 					if _, ok := proposedPositions[elf.proposedPosition]; !ok {
 						proposedPositions[elf.proposedPosition] = 0
 					}
+
 					proposedPositions[elf.proposedPosition]++
+					elf.canMove = true
 					break
 				}
 			}
@@ -123,10 +131,11 @@ func updateProposedPositions(elves map[Coord]*Elf, iteration int) map[Coord]int 
 func updateSurroundingElves(elves map[Coord]*Elf) {
 	directions := []string{"A", "N", "S", "E", "W"}
 	for position, elf := range elves {
-
 		for _, direction := range directions {
 			elf.surroundingElves[direction] = 0
+
 			neighbours := neighbours(position, direction)
+
 			for _, neighbour := range neighbours {
 				if _, ok := elves[neighbour]; ok {
 					elf.surroundingElves[direction]++
