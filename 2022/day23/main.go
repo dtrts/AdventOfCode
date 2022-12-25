@@ -32,9 +32,9 @@ func main() {
 
 	elves := parseInput(inputString)
 
-	p("=== Initial State ===")
-	printElves(elves, 2)
-	p("")
+	// p("=== Initial State ===")
+	// printElves(elves, 2)
+	// p("")
 
 	part1, part2 := 0, 0
 	iteration := 0
@@ -49,11 +49,12 @@ func main() {
 		if elvesMoved == 0 {
 			part2 = iteration + 1
 		}
-		fmt.Printf("=== End of Round %d ===\n", iteration+1)
-		p("Elves Moved", elvesMoved)
-		p("len elves", len(elves))
-		// printElves(elves, 0)
-		p("")
+
+		// fmt.Printf("=== End of Round %d ===\n", iteration+1)
+		// p("Elves Moved", elvesMoved)
+		// p("len elves", len(elves))
+		// // printElves(elves, 0)
+		// p("")
 
 		if iteration+1 == 10 {
 			minRect, maxRect := findMinMax(elves)
