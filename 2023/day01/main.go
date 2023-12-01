@@ -27,56 +27,27 @@ func main() {
 	}
 
 	inputString := string(inputBytes)
-	fmt.Println("Input bytes:", inputBytes)
-	fmt.Println("Input string", inputString)
+	// fmt.Println("Input bytes:", inputBytes)
+	// fmt.Println("Input string", inputString)
 	inputString = strings.TrimSpace(inputString)
 	// BOILER PLATE --------------------------------------------------------------------
 
 	lines := strings.Split(inputString, "\n")
 
-	fmt.Println(lines)
-
-	digitsRe := regexp.MustCompile(`^(1|2|3|4|5|6|7|8|9|0)`)
-	numsRe := regexp.MustCompile(`^(1|2|3|4|5|6|7|8|9|0|one|two|three|four|five|six|seven|eight|nine)`)
+	digitsRe     := regexp.MustCompile(`1|2|3|4|5|6|7|8|9|0`)
+	numsRe       := regexp.MustCompile(`1|2|3|4|5|6|7|8|9|0|one|two|three|four|five|six|seven|eight|nine`)
+	numsReversRe := regexp.MustCompile(`1|2|3|4|5|6|7|8|9|0|eno|owt|eerht|ruof|evif|xis|neves|thgie|enin`)
 
 	part1, part2 := 0, 0
 
 	for _, line := range lines {
-		digitsStrings := []string{}
-		numsStrings, numsStringsConv := []string{}, []string{}
+		// Part 1
+		digit1, digit2 := findFirstAndLast(line,digitsRe,digitsRe)
+		part1 += sumDigits(digit1,digit2)
 
-		// Search the start of ever decreasing line to include overlapping numbers (FindAll doesn't
-		// match overlaps :( )
-		for i := 0; i < len(line); i++ {
-			shortLine := line[i:]
-
-			digitString := digitsRe.FindString(shortLine)
-			if len(digitString) > 0 {
-				digitsStrings = append(digitsStrings, digitString)
-			}
-
-			numString := numsRe.FindString(shortLine)
-			if len(numString) > 0 {
-				numsStrings = append(numsStrings, numString)
-			}
-		}
-
-		numsStringsConv = convertNumNames(numsStrings)
-		fmt.Println("Line:     ", line)
-		fmt.Println("Digits:   ", digitsStrings)
-		fmt.Println("Nums:     ", numsStrings)
-		fmt.Println("NumsConv: ", numsStringsConv)
-		fmt.Println("")
-
-		if len(digitsStrings) > 0 {
-			digits := convertToIntSlice(digitsStrings)
-			part1 += (10*digits[0]) + digits[len(digits)-1]
-		}
-		if len(numsStringsConv) > 0 {
-			nums := convertToIntSlice(numsStringsConv)
-			part2 += (10*nums[0]) + nums[len(nums)-1]
-		}
-
+		// Part 2
+		digit1, digit2 = findFirstAndLast(line, numsRe, numsReversRe)
+		part2 += sumDigits(digit1,digit2)
 	}
 
 	// ANS --------------------------------------------------------------------
@@ -85,17 +56,6 @@ func main() {
 	fmt.Println("Part2:",part2)
 	log.Printf("Duration: %s", elapsed)
 	// ANS --------------------------------------------------------------------
-}
-
-func convertToIntSlice(s []string) []int {
-	i := make([]int, 0, len(s))
-
-	for _, v := range s {
-		vi, _ := strconv.Atoi(v)
-		i = append(i, vi)
-	}
-
-	return i
 }
 
 var digitNameMap = map[string]string{
@@ -110,16 +70,28 @@ var digitNameMap = map[string]string{
 	"nine": "9",
 }
 
-func convertNumNames(s []string) []string {
+func findFirstAndLast(line string, forwardRE, backwardRE *regexp.Regexp) (string,string) {
+		lineRev := reverseString(line)
+		return convertNumberToDigit(forwardRE.FindString(line)), convertNumberToDigit(reverseString(backwardRE.FindString(lineRev)))
+}
 
-	ret := make([]string,0, len(s))
+func convertNumberToDigit(s string) string {
+	if digit, ok := digitNameMap[s]; ok {
+		return digit
+	}
+  return s
+}
 
-	for _, v := range s {
-		if digit, ok := digitNameMap[v]; ok {
-			ret = append(ret, digit)
-		} else {
-			ret = append(ret, v)
-		}
+func reverseString(s string) string {
+	ret := ""
+	for i := len(s)-1; i>= 0 ; i-- {
+		ret += string(s[i])
 	}
 	return ret
+}
+
+func sumDigits(s1,s2 string) int {
+	n1, _ := strconv.Atoi(s1)
+	n2, _ := strconv.Atoi(s2)
+	return (10 * n1) + n2
 }
