@@ -45,19 +45,10 @@ func main() {
 
 func solveRace(race Race) int {
 	lower, upper := solveQuadRatic(race)
-
-	// If solution is int then that results in the same time as the record. It needs to be shifted by 1
-	lowerCeiling := int(math.Ceil(lower))
-	if math.Remainder(lower, 1) == 0 {
-		lowerCeiling++
-	}
-
-	upperCeiling := int(math.Floor(upper))
-	if math.Remainder(upper, 1) == 0 {
-		upperCeiling--
-	}
-
-	return upperCeiling - lowerCeiling + 1
+	// We want all ints within the bounds solved by the quadratic.
+	// So move the solution 'inward' and then find closest int outward.
+	// Edge case if  | upper - lower | <= 1 ?
+	return int(math.Ceil(upper-1)) - int(math.Floor(lower+1)) + 1
 }
 
 func solvePart1(races []Race) int {
