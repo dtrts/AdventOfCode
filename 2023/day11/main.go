@@ -28,15 +28,12 @@ func main() {
 	inputString := strings.TrimSpace(string(inputBytes))
 	// fmt.Println("Input:", inputString)
 	// BOILER PLATE --------------------------------------------------------------------
-	part1, part2 := 0, 0
+	galaxies, galaxies2 := parseInput(inputString), parseInput(inputString)
 
-	galaxies := parseInput(inputString)
-	expandAllGalaxy(galaxies, 2-1) // each line replaced with 2
-	solvePaths(galaxies)
-
-	galaxies2 := parseInput(inputString)
+	expandAllGalaxy(galaxies, 2-1)    // each line replaced with 2
 	expandAllGalaxy(galaxies2, 1e6-1) // each line replaced with 1e6
-	solvePaths(galaxies2)
+
+	part1, part2 := solvePaths(galaxies), solvePaths(galaxies2)
 
 	// ANS --------------------------------------------------------------------
 	elapsed := time.Since(start)
@@ -46,114 +43,49 @@ func main() {
 	// ANS --------------------------------------------------------------------
 }
 
-func solvePaths(galaxies []*Galaxy) int {
+func solvePaths(galaxies [][2]int) int {
 	ret := 0
 	for i := 0; i < len(galaxies); i++ {
 		for j := i; j < len(galaxies); j++ {
-			ret += galaxies[i].pathLen(galaxies[j])
+			ret += pathLen(galaxies[i], galaxies[j])
 		}
 	}
 	return ret
 }
 
-func expandAllGalaxy2(galaxies [][2]int, times int) {
+func expandAllGalaxy(galaxies [][2]int, times int) {
 
 	for coord := 0; coord < 2; coord++ {
-
 		slices.SortFunc(galaxies, func(a, b [2]int) int {
 			return a[coord] - b[coord]
 		})
 
-		oldXIdx := 0
 		for i := 0; i < len(galaxies); i++ {
-			newXIdx := galaxies[i][coord]
+			previousCoord, currentCoord := 0, galaxies[i][coord]
 			if i > 0 {
-				oldXIdx = galaxies[i-1][coord]
+				previousCoord = galaxies[i-1][coord]
 			}
-			gap := newXIdx - oldXIdx - 1
-			if gap < 1 {
-				oldXIdx = newXIdx
+
+			emptyLines := currentCoord - previousCoord - 1
+			if emptyLines < 1 {
 				continue
 			}
+
 			for j := i; j < len(galaxies); j++ {
-				galaxies[j][coord] += (gap * times)
+				galaxies[j][coord] += (emptyLines * times)
 			}
 		}
 	}
 }
 
-func expandAllGalaxy(galaxies []*Galaxy, times int) {
+func parseInput(input string) [][2]int {
+	galaxies := make([][2]int, 0, 0)
 
-	// sort by X, then for all galaxies add the differences to all following Xs from the current X
-
-	slices.SortFunc(galaxies, func(a, b *Galaxy) int {
-		return a.x - b.x
-	})
-
-	// fmt.Println("X-sort")
-	// printGalaxies(galaxies)
-
-	oldXIdx := 0
-	for i := 0; i < len(galaxies); i++ {
-		// fmt.Println("X: processing ", galaxies[i])
-		newXIdx := galaxies[i].x
-		if i > 0 {
-			oldXIdx = galaxies[i-1].x
-		}
-		gap := newXIdx - oldXIdx - 1
-		// fmt.Println("Gap ", gap)
-
-		if gap < 1 {
-			oldXIdx = newXIdx
-			continue
-		}
-
-		for j := i; j < len(galaxies); j++ {
-			// fmt.Println("Adding gap onto ", galaxies[j], gap, i, j)
-			galaxies[j].x += (gap * times)
-		}
-	}
-
-	// fmt.Println("X-pansion")
-	// printGalaxies(galaxies)
-
-	slices.SortFunc(galaxies, func(a, b *Galaxy) int {
-		return a.y - b.y
-	})
-
-	// fmt.Println("Y-sort")
-	// printGalaxies(galaxies)
-
-	oldYIdx := 0
-	for i := 0; i < len(galaxies); i++ {
-		newYIdx := galaxies[i].y
-		if i > 0 {
-			oldYIdx = galaxies[i-1].y
-		}
-		gap := newYIdx - oldYIdx - 1
-
-		if gap < 1 {
-			oldYIdx = newYIdx
-			continue
-		}
-
-		for j := i; j < len(galaxies); j++ {
-			galaxies[j].y += (gap * times)
-		}
-	}
-	// fmt.Println("yPansion")
-	// printGalaxies(galaxies)
-}
-
-func parseInput(input string) []*Galaxy {
 	lines := strings.Split(input, "\n")
-
-	galaxies := make([]*Galaxy, 0, 0)
-
 	for y, line := range lines {
 		for x, c := range line {
 			if string(c) == "#" {
-				galaxies = append(galaxies, &Galaxy{x: x, y: y})
+				galaxies = append(galaxies, [2]int{x, y})
 			}
 		}
 	}
@@ -161,21 +93,16 @@ func parseInput(input string) []*Galaxy {
 	return galaxies
 }
 
-type Galaxy struct {
-	x, y int
-}
-
 func max(a, b int) int {
 	if a > b {
 		return a
 	}
 	return b
-
 }
 
-func printGalaxies(g []*Galaxy) {
-	for _, gal := range g {
-		fmt.Println(gal)
+func printGalaxies(galaxies [][2]int) {
+	for _, galaxy := range galaxies {
+		fmt.Println(galaxy)
 	}
 }
 
@@ -187,6 +114,6 @@ func diff(a, b int) int {
 	return -1 * d
 }
 
-func (g1 *Galaxy) pathLen(g2 *Galaxy) int {
-	return diff(g1.x, g2.x) + diff(g1.y, g2.y)
+func pathLen(g1, g2 [2]int) int {
+	return diff(g1[0], g2[0]) + diff(g1[1], g2[1])
 }
